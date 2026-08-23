@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}InterviewIQ — Practice Your Next Interview{% endblock %}
+
+{% block public_content %}
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">AI-Powered Mock Interview Practice</p>
+    <h1 class="hero-title">Master your next interview with a personal AI coach.</h1>
+    <p class="hero-subtitle">
+      InterviewIQ turns interview prep into a closed loop:
+      practice, simulate, get evaluated on five dimensions, and follow a
+      personalized learning roadmap until you're ready.
+    </p>
+    <div class="hero-actions">
+      <a class="button button-primary button-large" href="{{ url_for('auth.register') }}">Create free account</a>
+      <a class="button button-ghost button-large" href="{{ url_for('auth.login') }}">Log in</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">How it works</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h3 class="card-title">1. Practice &amp; simulate</h3>
+      <p class="card-text">Pick a topic for guided Smart Practice, or run a timed, pressure-realistic Real Interview.</p>
+    </div>
+    <div class="card">
+      <h3 class="card-title">2. Get AI evaluation</h3>
+      <p class="card-text">Every answer is scored across technical accuracy, relevance, completeness, clarity, and communication.</p>
+    </div>
+    <div class="card">
+      <h3 class="card-title">3. Learn &amp; re-attempt</h3>
+      <p class="card-text">Weak spots become a day-by-day roadmap. Retry until your readiness score improves.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">Built for the full loop</h2>
+  <div class="feature-grid">
+    <div class="feature-item"><strong>Smart Practice Mode</strong><span>Guided questions with hints and model answers.</span></div>
+    <div class="feature-item"><strong>AI Real Interview Mode</strong><span>Adaptive questions on a timer, evaluated at the end.</span></div>
+    <div class="feature-item"><strong>Adaptive follow-ups</strong><span>Follow-ups probe deeper into what you actually said.</span></div>
+    <div class="feature-item"><strong>Weakness detection</strong><span>Repeated mistakes are tracked over time.</span></div>
+    <div class="feature-item"><strong>Learning roadmap</strong><span>A personal day-by-day plan tied to your gaps.</span></div>
+    <div class="feature-item"><strong>Interview memory</strong><span>Previous weak topics prioritize your next session.</span></div>
+  </div>
+</section>
+
+<section class="section section-cta">
+  <h2 class="section-title">Start your first practice session</h2>
+  <a class="button button-primary button-large" href="{{ url_for('auth.register') }}">Get started with InterviewIQ</a>
+</section>
+{% endblock %}

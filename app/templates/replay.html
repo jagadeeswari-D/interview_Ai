@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Interview Replay — InterviewIQ{% endblock %}
+
+{% block content %}
+
+{% if view == 'index' %}
+<header class="page-header">
+  <h1 class="page-title">Interview Replay</h1>
+  <p class="page-subtitle">
+    Walk through any completed session question by question — your answer,
+    the coach's feedback, missing points and the model answer.
+  </p>
+</header>
+
+<section class="card">
+  {% if interviews %}
+  <ul class="history-list">
+    {% for item in interviews %}
+    <li class="history-item">
+      <div class="history-item-main">
+        <span class="history-item-link">
+          {{ item.role if item.mode == 'real' else item.type }}
+        </span>
+        <div class="question-meta">
+          <span class="badge badge-muted">
+            {{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
+          {% if item.mode == 'real' %}
+          <span class="badge badge-muted">{{ type_label(item) | capitalize }}</span>
+          {% endif %}
+          <span class="badge badge-muted">{{ item.date[:16] }}</span>
+        </div>
+      </div>
+      <div class="history-item-score">
+        {% if item.overall_score is not none %}
+        <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
+          {{ item.overall_score | round(0) | int }}/100
+        </span>
+        {% endif %}
+        <a class="button button-small button-primary"
+           href="{{ url_for('replay.walkthrough', interview_id=item.id) }}">Open replay</a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-state-title">Nothing to replay yet</p>
+    <p class="empty-state-text">
+      Finish a practice question or a full interview and it will appear here
+      as a step-by-step replay.
+    </p>
+    <div class="quick-actions">
+      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if view == 'walkthrough' %}
+<header class="page-header">
+  <h1 class="page-title">Interview Replay</h1>
+  <p class="page-subtitle">
+    {{ type_label }} · {{ interview.role }}
+    {% if interview.mode == 'real' %} · {{ interview.difficulty | capitalize }}{% endif %}
+    · {{ interview.date[:16] }}
+  </p>
+</header>
+
+<nav class="card replay-nav" aria-label="Question navigation">
+  <div class="replay-nav-buttons">
+    {% if prev_position %}
+    <a class="button button-ghost button-small"
+       href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=prev_position) }}"
+       rel="prev">&larr; Previous</a>
+    {% else %}<span></span>{% endif %}
+
+    <span class="replay-position">Question {{ position }} of {{ total }}</span>
+
+    {% if next_position %}
+    <a class="button button-ghost button-small"
+       href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=next_position) }}"
+       rel="next">Next &rarr;</a>
+    {% else %}<span></span>{% endif %}
+  </div>
+  <div class="question-meta replay-jump" aria-label="Jump to a question">
+    {% for row in transcript %}
+    <a class="badge replay-jump-link {{ 'is-current' if loop.index == position }}"
+       href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=loop.index) }}"
+       aria-label="Go to question {{ loop.index }}">Q{{ loop.index }}</a>
+    {% endfor %}
+  </div>
+</nav>
+
+<section class="card interview-review-card" aria-live="polite">
+  <div class="question-meta">
+    <span class="badge">Q{{ position }}</span>
+    {% if current.question_type %}
+    <span class="badge badge-muted">{{ current.question_type | capitalize }}</span>
+    {% endif %}
+    {% if current.score is not none %}
+    <span class="badge interview-score-badge
+                 {{ 'is-high' if current.score >= 75 else ('is-mid' if current.score >= 50 else 'is-low') }}">
+      {{ current.score | round(0) | int }}/100
+    </span>
+    {% else %}
+    <span class="badge badge-muted">Not answered</span>
+    {% endif %}
+  </div>
+
+  <p class="ai-text question-text">{{ current.question }}</p>
+
+  {% if current.user_answer is not none %}
+  <h3 class="sub-heading">Your answer</h3>
+  <p class="user-answer-text">{{ current.user_answer }}</p>
+
+  <h3 class="sub-heading">Coach feedback</h3>
+  <p class="ai-text">{{ current.feedback }}</p>
+
+  {% if current.missing_points %}
+  <h3 class="sub-heading">Missing points</h3>
+  <ul class="missing-list">
+    {% for point in current.missing_points %}
+    <li>{{ point }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <h3 class="sub-heading">Model answer</h3>
+  <details class="reveal" {% if position == total %}open{% endif %}>
+    <summary>Show model answer</summary>
+    <div class="reveal-body">
+      <p class="ai-text">{{ current.model_answer }}</p>
+    </div>
+  </details>
+  {% else %}
+  <p class="stat-note">This question was never answered, so it was skipped
+     in grading.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <div class="quick-actions">
+    <a class="button button-block" href="{{ url_for('replay.index') }}">Back to replays</a>
+    <a class="button button-block" href="{{ url_for('history.detail', interview_id=interview.id) }}">Full session report</a>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

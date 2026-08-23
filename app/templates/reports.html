@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Reports — InterviewIQ{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Reports</h1>
+  <p class="page-subtitle">
+    Download a PDF report for any completed session — scores, feedback and a
+    coach summary.
+  </p>
+</header>
+
+{% if interviews %}
+<ul class="history-list">
+  {% for item in interviews %}
+  <li class="history-item">
+    <div class="history-item-main">
+      <span class="history-item-link is-static">
+        {{ item.role if item.mode == 'real' else item.type }}
+      </span>
+      <div class="question-meta">
+        <span class="badge badge-muted">{{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
+        {% if item.mode == 'real' %}
+        <span class="badge badge-muted">{{ type_labels.get(item.type, item.type) | capitalize }}</span>
+        {% endif %}
+        <span class="badge badge-muted">{{ item.date[:16] }}</span>
+      </div>
+    </div>
+    <div class="history-item-score">
+      {% if item.overall_score is not none %}
+      <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
+        {{ item.overall_score | round(0) | int }}/100
+      </span>
+      {% else %}
+      <span class="badge badge-muted">Not graded</span>
+      {% endif %}
+      <a class="button button-small button-primary"
+         href="{{ url_for('reports.download', interview_id=item.id) }}">Download PDF</a>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+<p class="stat-note">Reports are generated on demand and aren't stored — bookmark this page instead of the download link.</p>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">Nothing to report yet</p>
+    <p class="empty-state-text">
+      Reports are available once you complete a session. Finish a practice
+      question or a real interview first.
+    </p>
+    <div class="quick-actions">
+      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

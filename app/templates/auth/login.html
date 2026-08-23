@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Log in — InterviewIQ{% endblock %}
+
+{% block public_content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1 class="auth-title">Log in to InterviewIQ</h1>
+    <p class="auth-subtitle">Welcome back. Continue your interview practice.</p>
+
+    <form method="post" action="{{ url_for('auth.login') }}" class="form" novalidate>
+      {{ csrf_token() }}
+
+      <div class="field">
+        <label class="field-label" for="email">Email</label>
+        <input class="field-input" type="email" id="email" name="email"
+               value="{{ form.email }}" required autocomplete="email" autofocus>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="password">Password</label>
+        <input class="field-input" type="password" id="password" name="password"
+               value="{{ form.password }}" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="button button-primary button-block">Log in</button>
+    </form>
+
+    <p class="auth-alt">No account yet? <a href="{{ url_for('auth.register') }}">Create one</a>.</p>
+  </div>
+</div>
+{% endblock %}

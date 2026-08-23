@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Interview History — InterviewIQ{% endblock %}
+
+{% block content %}
+
+{% if view == 'list' %}
+<header class="page-header">
+  <h1 class="page-title">Interview History</h1>
+  <p class="page-subtitle">
+    Every completed practice session and real interview, with full feedback.
+  </p>
+</header>
+
+<section class="card" aria-label="Detected strengths and weaknesses">
+  <h2 class="card-title">Interview memory</h2>
+  {% if memory and (memory.weak_topics or memory.repeated_mistakes or memory.strong_topics) %}
+  <div class="stat-grid memory-grid">
+    <div class="stat-tile">
+      <span class="stat-label">Weak topics</span>
+      {% if memory.weak_topics %}
+      <span class="memory-topics">
+        {% for skill in memory.weak_topics %}<span class="badge">{{ skill }}</span>{% endfor %}
+      </span>
+      {% else %}<span class="stat-value">&mdash;</span>{% endif %}
+    </div>
+    <div class="stat-tile">
+      <span class="stat-label">Repeated mistakes</span>
+      {% if memory.repeated_mistakes %}
+      <span class="memory-topics">
+        {% for skill in memory.repeated_mistakes %}<span class="badge badge-muted">{{ skill }}</span>{% endfor %}
+      </span>
+      {% else %}<span class="stat-value">&mdash;</span>{% endif %}
+    </div>
+    <div class="stat-tile">
+      <span class="stat-label">Strong topics</span>
+      {% if memory.strong_topics %}
+      <span class="memory-topics">
+        {% for skill in memory.strong_topics %}<span class="badge">{{ skill }}</span>{% endfor %}
+      </span>
+      {% else %}<span class="stat-value">&mdash;</span>{% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-state-title">Nothing analyzed yet</p>
+    <p class="empty-state-text">
+      Finish a practice question or a full interview and your recurring
+      weak spots will be tracked here automatically.
+    </p>
+  </div>
+  {% endif %}
+</section>
+
+<section class="card" aria-label="Session filters">
+  <div class="question-meta history-filter">
+    <a class="button button-small {{ 'button-primary' if not mode_filter else 'button-ghost' }}"
+       href="{{ url_for('history.list_view') }}">All sessions</a>
+    {% for mode in modes %}
+    <a class="button button-small {{ 'button-primary' if mode_filter == mode else 'button-ghost' }}"
+       href="{{ url_for('history.list_view', mode=mode) }}">
+      {{ 'Smart Practice' if mode == 'practice' else 'Real Interviews' }}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if interviews %}
+  <ul class="history-list">
+    {% for item in interviews %}
+    <li class="history-item">
+      <div class="history-item-main">
+        <a class="history-item-link"
+           href="{{ url_for('history.detail', interview_id=item.id) }}">
+          {{ item.role if item.mode == 'real' else item.type }}
+        </a>
+        <div class="question-meta">
+          <span class="badge badge-muted">
+            {{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
+          {% if item.mode == 'real' %}
+          <span class="badge badge-muted">{{ item.difficulty | capitalize }}</span>
+          <span class="badge badge-muted">{{ type_labels.get(item.type, item.type) | capitalize }}</span>
+          {% endif %}
+          <span class="badge badge-muted">{{ item.date[:16] }}</span>
+        </div>
+      </div>
+      <div class="history-item-score">
+        {% if item.overall_score is not none %}
+        <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
+          {{ item.overall_score | round(0) | int }}/100
+        </span>
+        {% else %}
+        <span class="badge badge-muted">Not graded</span>
+        {% endif %}
+        <span class="stat-note">{{ item.graded_count }} graded</span>
+        <a class="button button-small button-ghost"
+           href="{{ url_for('replay.walkthrough', interview_id=item.id) }}">Open replay</a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-state-title">No completed sessions{% if mode_filter %} in this mode{% endif %}</p>
+    <p class="empty-state-text">
+      Start with Smart Practice or run a timed Real Interview — everything
+      you finish shows up here.
+    </p>
+    <div class="quick-actions">
+      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if view == 'detail' %}
+<header class="page-header">
+  <h1 class="page-title">{{ type_label if interview.mode == 'practice' else 'Interview result' }}</h1>
+  <p class="page-subtitle">
+    {{ type_label }} · {{ interview.role }}
+    {% if interview.mode == 'real' %} · {{ interview.difficulty | capitalize }}{% endif %}
+    · {{ interview.date[:16] }}
+  </p>
+</header>
+
+<section class="card" aria-live="polite">
+  <div class="score-summary interview-result-summary">
+    <div class="score-overall">
+      <span class="stat-value">{{ overall_score | round(0) | int if overall_score is not none else '—' }}<span class="score-denominator">/100</span></span>
+      <span class="stat-label">Overall score</span>
+      <span class="stat-note">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded</span>
+    </div>
+    <ul class="score-list">
+      {% for key, label in dimensions %}
+      {% set value = averages.get(key) %}
+      {% if value is not none %}
+      <li class="score-item">
+        <span class="score-item-label">{{ label }}</span>
+        <span class="meter" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
+          <span class="meter-fill meter-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"
+                style="width: {{ value | round(0) | int }}%;"></span>
+        </span>
+        <span class="score-item-value">{{ value | round(0) | int }}</span>
+      </li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{% for item in transcript %}
+<section class="card interview-review-card">
+  <div class="question-meta">
+    <span class="badge">Q{{ item.sequence_order }}</span>
+    {% if item.question_type %}
+    <span class="badge badge-muted">{{ item.question_type | capitalize }}</span>
+    {% endif %}
+    {% if item.score is not none %}
+    <span class="badge interview-score-badge
+                 {{ 'is-high' if item.score >= 75 else ('is-mid' if item.score >= 50 else 'is-low') }}">
+      {{ item.score | round(0) | int }}/100
+    </span>
+    {% else %}
+    <span class="badge badge-muted">Not answered</span>
+    {% endif %}
+  </div>
+
+  <p class="ai-text question-text">{{ item.question }}</p>
+
+  {% if item.user_answer is not none %}
+  <details class="reveal" {% if loop.first %}open{% endif %}>
+    <summary>Show your answer</summary>
+    <div class="reveal-body">
+      <p class="user-answer-text">{{ item.user_answer }}</p>
+    </div>
+  </details>
+
+  <h3 class="sub-heading">Coach feedback</h3>
+  <p class="ai-text">{{ item.feedback }}</p>
+
+  {% if item.missing_points %}
+  <h3 class="sub-heading">Missing points</h3>
+  <ul class="missing-list">
+    {% for point in item.missing_points %}
+    <li>{{ point }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <details class="reveal">
+    <summary>Show model answer</summary>
+    <div class="reveal-body">
+      <p class="ai-text">{{ item.model_answer }}</p>
+    </div>
+  </details>
+  {% else %}
+  <p class="stat-note">This question was never answered, so it was skipped
+     in grading.</p>
+  {% endif %}
+</section>
+{% endfor %}
+
+<section class="card">
+  <div class="quick-actions">
+    <a class="button button-block button-primary" href="{{ url_for('replay.walkthrough', interview_id=interview.id) }}">Open in Replay</a>
+    <a class="button button-block" href="{{ url_for('history.list_view') }}">Back to history</a>
+    <a class="button button-block" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

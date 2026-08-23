@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Smart Practice — InterviewIQ{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Smart Practice</h1>
+  {% if view == 'pick' %}
+  <p class="page-subtitle">Pick a topic and get an interview question tailored for a {{ role_label }} role.</p>
+  {% elif view == 'answer' %}
+  <p class="page-subtitle">Answer below — you'll get instant rubric-based feedback from the AI coach.</p>
+  {% else %}
+  <p class="page-subtitle">Here's how your answer scored.</p>
+  {% endif %}
+</header>
+
+{% if view == 'pick' %}
+{% if prefill_topic %}
+<div class="alert alert-info" role="status">
+  <span class="alert-message">Practicing a roadmap topic — <strong>{{ prefill_topic }}</strong></span>
+</div>
+{% endif %}
+<section class="card">
+  <h2 class="card-title">Choose a topic</h2>
+  <form method="post" action="{{ url_for('practice.new_question') }}" class="form">
+    {{ csrf_token() }}
+    <div class="field">
+      <label class="field-label" for="topic">Topic</label>
+      <input class="field-input" type="text" id="topic" name="topic" list="topic-suggestions"
+             required minlength="2" maxlength="80" autofocus
+             value="{{ prefill_topic or '' }}"
+             placeholder="e.g. SQL joins, REST API design">
+      <datalist id="topic-suggestions">
+        {% for suggestion in suggestions %}
+        <option value="{{ suggestion }}"></option>
+        {% endfor %}
+      </datalist>
+      <p class="field-hint">Type any topic, or pick one of the suggestions.</p>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="difficulty">Difficulty</label>
+      <select class="field-input" id="difficulty" name="difficulty">
+        {% for level in difficulties %}
+        <option value="{{ level }}" {{ 'selected' if level == prefill_difficulty }}>{{ level | capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="button button-primary">Get interview question</button>
+    <p class="field-hint">Each generated question is logged to your practice history.</p>
+  </form>
+</section>
+{% endif %}
+
+{% if view == 'answer' %}
+<section class="card">
+  <div class="question-meta">
+    <span class="badge">{{ q.question_type | capitalize if q.question_type else 'Question' }}</span>
+    <span class="badge badge-muted">{{ q.difficulty | capitalize }}</span>
+    <span class="question-topic">{{ q.topic }}</span>
+  </div>
+  <p class="ai-text question-text">{{ q.question }}</p>
+
+  <details class="reveal">
+    <summary>Need a hint?</summary>
+    <div class="reveal-body">
+      <p>A strong answer would touch on:</p>
+      <ul class="concept-list">
+        {% for concept in concepts %}
+        <li>{{ concept }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </details>
+
+  <form method="post" action="{{ url_for('practice.submit_answer') }}" class="form">
+    {{ csrf_token() }}
+    <input type="hidden" name="question_id" value="{{ q.id }}">
+    <div class="field">
+      <label class="field-label" for="answer">Your answer</label>
+      <textarea class="field-input" id="answer" name="answer" rows="8" required
+                maxlength="5000" autofocus
+                placeholder="Answer as you would in a real interview…"></textarea>
+    </div>
+    <button type="submit" class="button button-primary">Submit for evaluation</button>
+  </form>
+</section>
+<p class="practice-alt"><a href="{{ url_for('practice.pick') }}">← Choose a different topic</a></p>
+{% endif %}
+
+{% if view == 'result' %}
+<section class="card" aria-live="polite">
+  <div class="question-meta">
+    <span class="badge">{{ q.question_type | capitalize if q.question_type else 'Question' }}</span>
+    <span class="question-topic">{{ q.topic }}</span>
+  </div>
+  <p class="ai-text question-text">{{ q.question }}</p>
+
+  <div class="score-summary">
+    <div class="score-overall">
+      <span class="stat-value">{{ answer.score | round(0) | int }}<span class="score-denominator">/100</span></span>
+      <span class="stat-label">Overall score</span>
+    </div>
+    <ul class="score-list">
+      {% for key, label in dimensions %}
+      {% set value = answer.scores.get(key) %}
+      {% if value is not none %}
+      <li class="score-item">
+        <span class="score-item-label">{{ label }}</span>
+        <span class="meter" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
+          <span class="meter-fill meter-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"
+                style="width: {{ value | round(0) | int }}%;"></span>
+        </span>
+        <span class="score-item-value">{{ value | round(0) | int }}</span>
+      </li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="card-title">Coach feedback</h2>
+  <p class="ai-text">{{ answer.feedback }}</p>
+
+  {% if answer.missing_points %}
+  <h3 class="sub-heading">Missing points</h3>
+  <ul class="missing-list">
+    {% for point in answer.missing_points %}
+    <li>{{ point }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <details class="reveal">
+    <summary>Show model answer</summary>
+    <div class="reveal-body">
+      <p class="ai-text">{{ answer.model_answer }}</p>
+    </div>
+  </details>
+
+  <details class="reveal">
+    <summary>Show your answer</summary>
+    <div class="reveal-body">
+      <p class="user-answer-text">{{ answer.user_answer }}</p>
+    </div>
+  </details>
+</section>
+
+<section class="card">
+  <h2 class="card-title">What next?</h2>
+  <div class="quick-actions">
+    <form method="post" action="{{ url_for('practice.new_question') }}">
+      {{ csrf_token() }}
+      <input type="hidden" name="interview_id" value="{{ q.interview_id }}">
+      <input type="hidden" name="topic" value="{{ q.topic }}">
+      <input type="hidden" name="difficulty" value="{{ q.difficulty }}">
+      <button type="submit" class="button button-primary button-block">Try again — new question on “{{ q.topic }}”</button>
+    </form>
+    <a class="button button-block" href="{{ url_for('practice.pick') }}">Practice a different topic</a>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

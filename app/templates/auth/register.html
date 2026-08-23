@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Create account — InterviewIQ{% endblock %}
+
+{% block public_content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-subtitle">Start practicing interviews in under a minute.</p>
+
+    <form method="post" action="{{ url_for('auth.register') }}" class="form" novalidate>
+      {{ csrf_token() }}
+
+      <div class="field">
+        <label class="field-label" for="name">Full name</label>
+        <input class="field-input" type="text" id="name" name="name"
+               value="{{ form.name }}" required autocomplete="name" autofocus
+               minlength="2" maxlength="80">
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="email">Email</label>
+        <input class="field-input" type="email" id="email" name="email"
+               value="{{ form.email }}" required autocomplete="email">
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="password">Password</label>
+        <input class="field-input" type="password" id="password" name="password"
+               required autocomplete="new-password" minlength="8"
+               aria-describedby="password-hint">
+        <p class="field-hint" id="password-hint">At least 8 characters, with at least one letter and one number.</p>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="confirm">Confirm password</label>
+        <input class="field-input" type="password" id="confirm" name="confirm"
+               required autocomplete="new-password" minlength="8">
+      </div>
+
+      <button type="submit" class="button button-primary button-block">Create account</button>
+    </form>
+
+    <p class="auth-alt">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>.</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="InterviewIQ — AI-powered mock interview practice for students and fresh graduates.">
+  <title>{% block title %}InterviewIQ{% endblock %}</title>
+  <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% if g.user %}
+  <div class="app-shell">
+
+    <aside class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="sidebar-header">
+        <span class="brand-mark">IQ</span>
+        <span class="brand-name">InterviewIQ</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('main.dashboard') }}"
+           class="nav-link {{ 'active' if active_page == 'dashboard' }}">Dashboard</a>
+
+        <span class="nav-section-label">Practice</span>
+        <a href="{{ url_for('practice.pick') }}"
+           class="nav-link {{ 'active' if active_page == 'practice' }}">Smart Practice</a>
+        <a href="{{ url_for('interview.config') }}"
+           class="nav-link {{ 'active' if active_page == 'interview' }}">Real Interview</a>
+
+        <span class="nav-section-label">Progress</span>
+        <a href="{{ url_for('history.list_view') }}"
+           class="nav-link {{ 'active' if active_page == 'history' }}">Interview History</a>
+        <a href="{{ url_for('replay.index') }}"
+           class="nav-link {{ 'active' if active_page == 'replay' }}">Interview Replay</a>
+        <a href="{{ url_for('roadmap.view') }}"
+           class="nav-link {{ 'active' if active_page == 'roadmap' }}">Learning Roadmap</a>
+        <a href="{{ url_for('resume.view') }}"
+           class="nav-link {{ 'active' if active_page == 'resume' }}">Resume Analysis</a>
+        <a href="{{ url_for('analytics.view') }}"
+           class="nav-link {{ 'active' if active_page == 'analytics' }}">Performance Analytics</a>
+        <a href="{{ url_for('reports.index') }}"
+           class="nav-link {{ 'active' if active_page == 'reports' }}">Reports</a>
+
+        <span class="nav-section-label">Account</span>
+        <a class="nav-link is-disabled" href="#" aria-disabled="true">Profile <span class="soon-badge">Soon</span></a>
+        <a class="nav-link is-disabled" href="#" aria-disabled="true">Settings <span class="soon-badge">Soon</span></a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-chip" title="{{ g.user.email }}">
+          <span class="avatar" aria-hidden="true">{{ g.user.name[:1] | upper }}</span>
+          <span class="user-chip-name">{{ g.user.name }}</span>
+        </div>
+        <div class="sidebar-actions">
+          <button type="button" id="theme-toggle" class="icon-button" aria-label="Toggle light or dark theme">Theme</button>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            {{ csrf_token() }}
+            <button type="submit" class="button button-ghost button-small">Log out</button>
+          </form>
+        </div>
+      </div>
+    </aside>
+
+    <button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-label="Open navigation">
+      <span class="hamburger" aria-hidden="true"></span>
+    </button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="content">
+      {% include "_flash.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  {% else %}
+
+  <header class="public-nav">
+    <div class="public-nav-inner">
+      <span class="brand-mark">IQ</span>
+      <span class="brand-name">InterviewIQ</span>
+      <div class="public-nav-links">
+        <a class="button button-ghost" href="{{ url_for('auth.login') }}">Log in</a>
+        <a class="button button-primary" href="{{ url_for('auth.register') }}">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="public-main">
+    {% include "_flash.html" %}
+    {% block public_content %}{% endblock %}
+  </main>
+
+  <footer class="public-footer">
+    <p>InterviewIQ &middot; AI-powered mock interview practice &middot; Built on Flask + SQLite</p>
+  </footer>
+
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

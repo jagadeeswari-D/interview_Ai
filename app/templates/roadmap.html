@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Learning Roadmap — InterviewIQ{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Learning Roadmap</h1>
+  <p class="page-subtitle">
+    A day-by-day plan built from your weakest skills. Work through it,
+    check days off, and jump straight back into practice.
+  </p>
+</header>
+
+{% if total %}
+
+<section class="card" aria-label="Roadmap progress">
+  <div class="roadmap-progress-head">
+    <span class="stat-value">{{ completed }}<span class="score-denominator">/{{ total }}</span></span>
+    <span class="stat-label">Days completed</span>
+  </div>
+  <span class="meter roadmap-meter" role="progressbar"
+        aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"
+        aria-label="Roadmap progress: {{ percent }} percent complete">
+    <span class="meter-fill meter-{{ 'high' if percent >= 75 else ('mid' if percent >= 50 else 'low') }}"
+          style="width: {{ percent }}%;"></span>
+  </span>
+
+  {% if skills_context %}
+  <p class="stat-note">Built from your weak skills: {{ skills_context }}</p>
+  {% endif %}
+  {% if memory and memory.repeated_mistakes %}
+  <p class="stat-note">Repeated mistakes planned first:
+    {% for skill in memory.repeated_mistakes %}<span class="badge badge-muted">{{ skill }}</span>{% endfor %}
+  </p>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('roadmap.generate') }}" class="roadmap-regenerate">
+    {{ csrf_token() }}
+    <button type="submit" class="button button-ghost button-small">Regenerate from current weaknesses</button>
+    <span class="field-hint">Replaces this plan and resets progress.</span>
+  </form>
+</section>
+
+<ol class="roadmap-days">
+  {% for day in days %}
+  <li class="card roadmap-day {{ 'is-completed' if day.status == 'completed' }}" id="day-{{ day.id }}">
+    <div class="roadmap-day-main">
+      <div class="question-meta">
+        <span class="badge">Day {{ day.day_number }}</span>
+        <span class="badge badge-muted roadmap-status-badge
+                     {{ 'is-done' if day.status == 'completed' }}">
+          {{ 'Completed' if day.status == 'completed' else 'Pending' }}
+        </span>
+      </div>
+      <h2 class="roadmap-day-topic">{{ day.topic }}</h2>
+      <p class="ai-text roadmap-day-focus">{{ day.practice_focus }}</p>
+      <a class="button button-small button-primary"
+         href="{{ url_for('practice.pick', topic=day.topic, difficulty='medium') }}">Practice this topic</a>
+    </div>
+
+    <form method="post" action="{{ url_for('roadmap.toggle', day_id=day.id) }}"
+          class="roadmap-toggle-form">
+      {{ csrf_token() }}
+      <input type="hidden" name="state"
+             value="{{ 'pending' if day.status == 'completed' else 'completed' }}">
+      <button type="submit" class="roadmap-toggle {{ 'is-checked' if day.status == 'completed' }}"
+              aria-pressed="{{ 'true' if day.status == 'completed' else 'false' }}"
+              aria-label="Mark day {{ day.day_number }} as
+                          {{ 'pending' if day.status == 'completed' else 'completed' }}">
+        <span class="checkmark" aria-hidden="true"></span>
+      </button>
+    </form>
+  </li>
+  {% endfor %}
+</ol>
+
+{% else %}
+
+<section class="card">
+  <div class="empty-state">
+    {% if has_weaknesses %}
+    <p class="empty-state-title">Your plan is one click away</p>
+    <p class="empty-state-text">
+      The coach has spotted weak areas in your answers. Generate a
+      day-by-day roadmap that tackles them in order, starting with your
+      most repeated mistakes.
+    </p>
+    <form method="post" action="{{ url_for('roadmap.generate') }}" class="quick-actions">
+      {{ csrf_token() }}
+      <button type="submit" class="button button-primary button-block">Generate my learning roadmap</button>
+    </form>
+    {% else %}
+    <p class="empty-state-title">No weak spots to work on yet</p>
+    <p class="empty-state-text">
+      Your roadmap is generated from the weaknesses the AI coach detects in
+      your answers. Finish some Smart Practice questions or a timed Real
+      Interview first — then come back for your personalized plan.
+    </p>
+    <div class="quick-actions">
+      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

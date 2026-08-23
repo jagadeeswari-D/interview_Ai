@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — InterviewIQ{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Dashboard</h1>
+  <p class="page-subtitle">Welcome back, {{ g.user.name }}. Here's where you stand.</p>
+</header>
+
+<section class="stat-grid" aria-label="Key statistics">
+  <div class="card stat-tile">
+    <span class="stat-label">Readiness Score <span class="stat-hint" title="{{ readiness.label if readiness else 'Self-assessment readiness indicator' }}">(self-assessment)</span></span>
+    {% if readiness and readiness.score is not none %}
+    <span class="stat-value">{{ readiness.score | round(0) | int }}/100</span>
+    <a class="stat-note stat-link" href="{{ url_for('analytics.view') }}">
+      {{ readiness.signals_used }} of {{ readiness.components | length }} signals — see breakdown
+    </a>
+    {% else %}
+    <span class="stat-value">—</span>
+    <span class="stat-note">Finish a practice question or interview to unlock it</span>
+    {% endif %}
+  </div>
+  <div class="card stat-tile">
+    <span class="stat-label">Real Interviews</span>
+    <span class="stat-value">{{ interview_count }}</span>
+    <span class="stat-note">completed timed sessions</span>
+  </div>
+  <div class="card stat-tile">
+    <span class="stat-label">Practice Sessions</span>
+    <span class="stat-value">{{ practice_count }}</span>
+    <span class="stat-note">completed questions</span>
+  </div>
+  <div class="card stat-tile">
+    <span class="stat-label">Weaknesses Found</span>
+    <span class="stat-value">{{ weakness_count }}</span>
+    <span class="stat-note"><a class="stat-link" href="{{ url_for('roadmap.view') }}">view your roadmap</a></span>
+  </div>
+</section>
+
+<section class="panel-grid">
+  <div class="card">
+    <h2 class="card-title">Score trend</h2>
+    {% if spark_count >= 2 %}
+    <svg class="sparkline" viewBox="0 0 100 40" preserveAspectRatio="none"
+         role="img" aria-label="Trend of your last {{ spark_count }} session scores">
+      <polyline points="{{ spark_points }}" />
+    </svg>
+    <p class="stat-note">Your last {{ spark_count }} graded sessions.</p>
+    {% elif spark_count == 1 %}
+    <p class="empty-state-text">One graded session so far — keep going to see your trend line.</p>
+    {% else %}
+    <div class="empty-state">
+      <p class="empty-state-title">No scores yet</p>
+      <p class="empty-state-text">Complete a practice question or a real interview and your trend appears here.</p>
+    </div>
+    {% endif %}
+    <a class="button button-ghost button-small" href="{{ url_for('analytics.view') }}">Open Performance Analytics</a>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title">Quick actions</h2>
+    <div class="quick-actions">
+      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">
+        Start Smart Practice
+      </a>
+      <a class="button button-block" href="{{ url_for('interview.config') }}">
+        Start Real Interview
+      </a>
+      <a class="button button-block" href="{{ url_for('resume.view') }}">
+        Analyze my resume
+      </a>
+    </div>
+    <p class="stat-note">Real Interview mode runs a timed session with an AI interviewer — feedback unlocks at the end.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="card-title">Recent activity</h2>
+  {% if recent %}
+  <ul class="history-list">
+    {% for item in recent %}
+    <li class="history-item">
+      <div class="history-item-main">
+        <a class="history-item-link" href="{{ url_for('replay.walkthrough', interview_id=item.id) }}">
+          {{ item.role if item.mode == 'real' else item.type }}
+        </a>
+        <div class="question-meta">
+          <span class="badge badge-muted">{{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
+          <span class="badge badge-muted">{{ item.date[:16] }}</span>
+        </div>
+      </div>
+      <div class="history-item-score">
+        {% if item.overall_score is not none %}
+        <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
+          {{ item.overall_score | round(0) | int }}/100
+        </span>
+        {% else %}
+        <span class="badge badge-muted">Not graded</span>
+        {% endif %}
+        <a class="button button-small button-ghost" href="{{ url_for('reports.download', interview_id=item.id) }}">Report PDF</a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if total_completed > recent | length %}
+  <a class="button button-ghost button-small" href="{{ url_for('history.list_view') }}">View all history</a>
+  {% endif %}
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-state-title">No activity yet</p>
+    <p class="empty-state-text">
+      Start with Smart Practice or run a timed Real Interview — everything you
+      finish shows up here.
+    </p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

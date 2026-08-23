@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Resume Analysis — InterviewIQ{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Resume Analysis</h1>
+  <p class="page-subtitle">
+    Upload a text-based PDF resume — the coach extracts your skills, projects,
+    technologies and certifications, then drills you on them.
+  </p>
+</header>
+
+<section class="card" aria-labelledby="upload-title">
+  <h2 class="card-title" id="upload-title">Your resume</h2>
+  {% if has_resume %}
+  <p class="stat-note">A resume is on file. Uploading a new one replaces it.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('resume.upload') }}" enctype="multipart/form-data" class="stack-form">
+    {{ csrf_token() }}
+    <div class="form-field">
+      <label for="resume-file">Resume PDF (max 5 MB)</label>
+      <input type="file" id="resume-file" name="resume" accept=".pdf,application/pdf" required>
+      <p class="stat-note">PDF only. Scanned or image-only resumes can't be read — OCR isn't supported.</p>
+    </div>
+    <button type="submit" class="button button-primary">Upload and analyze</button>
+  </form>
+</section>
+
+{% if analysis %}
+<section class="card" aria-labelledby="analysis-title">
+  <div class="card-title-row">
+    <h2 class="card-title" id="analysis-title">Extracted profile</h2>
+    <form method="post" action="{{ url_for('resume.analyze') }}">
+      {{ csrf_token() }}
+      <button type="submit" class="button button-ghost button-small">Analyze again</button>
+    </form>
+  </div>
+
+  {% if analysis.skills %}
+  <h3 class="list-heading">Skills</h3>
+  <div class="badge-cloud">
+    {% for skill in analysis.skills %}<span class="badge">{{ skill }}</span>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if analysis.projects %}
+  <h3 class="list-heading">Projects</h3>
+  <ul class="plain-list">
+    {% for project in analysis.projects %}<li>{{ project }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if analysis.technologies %}
+  <h3 class="list-heading">Technologies</h3>
+  <div class="badge-cloud">
+    {% for tech in analysis.technologies %}<span class="badge badge-muted">{{ tech }}</span>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if analysis.certifications %}
+  <h3 class="list-heading">Certifications</h3>
+  <ul class="plain-list">
+    {% for cert in analysis.certifications %}<li>{{ cert }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <hr class="soft-divider">
+
+  <section aria-labelledby="generate-title">
+    <h3 class="card-title" id="generate-title">Practice from this resume</h3>
+    <p class="stat-note">
+      Generates interview questions grounded in your projects and skills, using
+      the same practice flow as Smart Practice.
+    </p>
+    <form method="post" action="{{ url_for('resume.questions') }}" class="inline-form">
+      {{ csrf_token() }}
+      <label class="visually-hidden" for="resume-difficulty">Difficulty</label>
+      <select id="resume-difficulty" name="difficulty">
+        {% for difficulty in difficulties %}
+        <option value="{{ difficulty }}">{{ difficulty | capitalize }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="button button-primary">Generate questions from this</button>
+    </form>
+  </section>
+</section>
+{% else %}
+<section class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">No analysis yet</p>
+    <p class="empty-state-text">
+      Upload your resume above. After the coach parses it, you'll see the
+      extracted skills, projects and technologies here — and you can generate
+      interview questions straight from them.
+    </p>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

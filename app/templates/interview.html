@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block title %}Real Interview — InterviewIQ{% endblock %}
+
+{% block content %}
+
+{% if view == 'config' %}
+<header class="page-header">
+  <h1 class="page-title">AI Real Interview</h1>
+  <p class="page-subtitle">
+    A timed, pressure-realistic session with an AI interviewer. No hints, no
+    model answers — full feedback only at the end.
+  </p>
+</header>
+
+<section class="card">
+  <h2 class="card-title">Configure your interview</h2>
+  <form method="post" action="{{ url_for('interview.start') }}" class="form">
+    {{ csrf_token() }}
+    <div class="field">
+      <label class="field-label" for="role">Target role</label>
+      <input class="field-input" type="text" id="role" name="role" required
+             minlength="2" maxlength="80" value="{{ role_label }}" autofocus
+             placeholder="e.g. Backend Developer, Data Analyst">
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="type">Interview type</label>
+      <select class="field-input" id="type" name="type">
+        {% for key, label in types.items() %}
+        <option value="{{ key }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="difficulty">Difficulty</label>
+      <select class="field-input" id="difficulty" name="difficulty">
+        {% for level in difficulties %}
+        <option value="{{ level }}"
+                data-questions="{{ budgets[level].question_limit }}"
+                data-minutes="{{ budgets[level].duration_minutes }}"
+                {{ 'selected' if level == 'medium' }}>
+          {{ level | capitalize }} — {{ budgets[level].question_limit }} questions,
+          {{ budgets[level].duration_minutes }} minutes
+        </option>
+        {% endfor %}
+      </select>
+      <p class="field-hint">The timer starts with the first question and runs
+         for the whole session.</p>
+    </div>
+
+    <button type="submit" class="button button-primary button-large">
+      Start timed interview
+    </button>
+  </form>
+</section>
+
+<section class="interview-rules card">
+  <h2 class="card-title">How a real session works</h2>
+  <ul class="concept-list">
+    <li>The AI interviewer asks one question at a time and follows up on what
+        you actually say.</li>
+    <li><strong>No hints or model answers</strong> are shown during the
+        interview.</li>
+    <li>When the timer hits zero, whatever you typed is submitted as-is and
+        the session is graded.</li>
+    <li>Scores, coach feedback, and model answers unlock on the completion
+        screen only.</li>
+  </ul>
+</section>
+{% endif %}
+
+{% if view == 'live' %}
+<div class="interview-live-header page-header">
+  <div class="timer" id="interview-timer"
+       data-seconds-remaining="{{ remaining_seconds }}"
+       role="timer" aria-label="Time remaining">
+    <span class="timer-value" id="timer-value">--:--</span>
+    <span class="timer-label">time left</span>
+  </div>
+  <div class="interview-progress">
+    <span class="interview-progress-text">Question {{ question_number }} of {{ interview.question_limit }}</span>
+    <span class="meter interview-progress-meter"
+          aria-hidden="true"><span class="meter-fill meter-high" id="progress-fill"
+          style="width: {{ ((question_number - 1) / interview.question_limit * 100) | round | int }}%;"></span></span>
+    <span class="badge badge-muted">{{ type_label }}</span>
+    <span class="badge badge-muted">{{ interview.role }}</span>
+  </div>
+</div>
+
+<section class="card interview-live-card">
+  {% if q.question_type %}
+  <div class="question-meta">
+    <span class="badge">{{ q.question_type | capitalize }}</span>
+  </div>
+  {% endif %}
+  <p class="ai-text question-text" aria-live="polite">{{ q.question }}</p>
+
+  <form method="post" id="interview-answer-form" class="form"
+        action="{{ url_for('interview.submit_answer', interview_id=interview.id) }}">
+    {{ csrf_token() }}
+    <input type="hidden" name="question_id" value="{{ q.id }}">
+    <div class="field">
+      <label class="field-label" for="answer">Your answer</label>
+      <textarea class="field-input" id="answer" name="answer" rows="9"
+                maxlength="5000" autofocus
+                placeholder="Answer as you would in the room…">{{ preserved_answer }}</textarea>
+      <p class="field-hint">Hints are off. If the timer runs out mid-answer,
+         your draft is auto-submitted as-is.</p>
+    </div>
+    <button type="submit" class="button button-primary" id="answer-submit">
+      Submit answer
+    </button>
+  </form>
+</section>
+
+<form method="post" class="interview-finish-form"
+      action="{{ url_for('interview.finish', interview_id=interview.id) }}">
+  {{ csrf_token() }}
+  <button type="submit" class="button button-ghost button-small">
+    End interview &amp; see results
+  </button>
+</form>
+{% endif %}
+
+{% if view == 'pending' %}
+<header class="page-header">
+  <h1 class="page-title">Interview paused</h1>
+  <p class="page-subtitle">
+    Your last answer was saved, but the next question isn't ready yet.
+  </p>
+</header>
+
+<section class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded so far</p>
+    <p class="empty-state-text">
+      The AI interviewer hit a temporary problem while preparing your follow-up.
+      Retry below — or end the session now and get your results for everything
+      answered so far.
+    </p>
+  </div>
+  <div class="quick-actions interview-pending-actions">
+    <form method="post"
+          action="{{ url_for('interview.continue_interview', interview_id=interview.id) }}">
+      {{ csrf_token() }}
+      <button type="submit" class="button button-primary button-block">
+        Try to continue
+      </button>
+    </form>
+    <form method="post"
+          action="{{ url_for('interview.finish', interview_id=interview.id) }}">
+      {{ csrf_token() }}
+      <button type="submit" class="button button-block">
+        End interview &amp; see results
+      </button>
+    </form>
+  </div>
+</section>
+{% endif %}
+
+{% if view == 'complete' %}
+<header class="page-header">
+  <h1 class="page-title">Interview complete</h1>
+  <p class="page-subtitle">
+    {{ type_label }} · {{ interview.role }} ·
+    {{ interview.difficulty | capitalize }} — here is your full evaluation.
+  </p>
+</header>
+
+<section class="card" aria-live="polite">
+  <div class="score-summary interview-result-summary">
+    <div class="score-overall">
+      <span class="stat-value">{{ overall_score | round(0) | int if overall_score is not none else '—' }}<span class="score-denominator">/100</span></span>
+      <span class="stat-label">Overall score</span>
+      <span class="stat-note">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded</span>
+    </div>
+    <ul class="score-list">
+      {% for key, label in dimensions %}
+      {% set value = averages.get(key) %}
+      {% if value is not none %}
+      <li class="score-item">
+        <span class="score-item-label">{{ label }}</span>
+        <span class="meter" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
+          <span class="meter-fill meter-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"
+                style="width: {{ value | round(0) | int }}%;"></span>
+        </span>
+        <span class="score-item-value">{{ value | round(0) | int }}</span>
+      </li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{% for item in transcript %}
+<section class="card interview-review-card">
+  <div class="question-meta">
+    <span class="badge">Q{{ item.sequence_order }}</span>
+    {% if item.question_type %}
+    <span class="badge badge-muted">{{ item.question_type | capitalize }}</span>
+    {% endif %}
+    {% if item.score is not none %}
+    <span class="badge interview-score-badge
+                 {{ 'is-high' if item.score >= 75 else ('is-mid' if item.score >= 50 else 'is-low') }}">
+      {{ item.score | round(0) | int }}/100
+    </span>
+    {% else %}
+    <span class="badge badge-muted">Not answered</span>
+    {% endif %}
+  </div>
+
+  <p class="ai-text question-text">{{ item.question }}</p>
+
+  {% if item.user_answer is not none %}
+  <details class="reveal" {% if loop.first %}open{% endif %}>
+    <summary>Show your answer</summary>
+    <div class="reveal-body">
+      <p class="user-answer-text">{{ item.user_answer }}</p>
+    </div>
+  </details>
+
+  <h3 class="sub-heading">Coach feedback</h3>
+  <p class="ai-text">{{ item.feedback }}</p>
+
+  {% if item.missing_points %}
+  <h3 class="sub-heading">Missing points</h3>
+  <ul class="missing-list">
+    {% for point in item.missing_points %}
+    <li>{{ point }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <details class="reveal">
+    <summary>Show model answer</summary>
+    <div class="reveal-body">
+      <p class="ai-text">{{ item.model_answer }}</p>
+    </div>
+  </details>
+  {% else %}
+  <p class="stat-note">The timer ran out before this question was answered,
+     so it was skipped in grading.</p>
+  {% endif %}
+</section>
+{% endfor %}
+
+<section class="card">
+  <h2 class="card-title">What next?</h2>
+  <div class="quick-actions">
+    <a class="button button-primary button-block"
+       href="{{ url_for('interview.config') }}">Run another interview</a>
+    <a class="button button-block" href="{{ url_for('practice.pick') }}">
+      Practice your weak spots in Smart Practice</a>
+    <a class="button button-block" href="{{ url_for('history.detail', interview_id=interview.id) }}">
+      View this session in your history</a>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% if view == 'live' %}
+<script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+{% endif %}
+{% endblock %}

@@ -941,16 +941,17 @@ class GeminiRateLimitTests(RateLimitTestBase):
 # ---------------------------------------------------------------------------
 
 class SidebarScopeTests(Stage6TestBase):
-    def test_three_new_entries_active_profile_settings_stay_disabled(self):
+    def test_settings_still_disabled_profile_now_active(self):
         self._register_and_login()
         html = self.client.get("/dashboard").get_data(as_text=True)
 
         self.assertIn('href="/resume"', html)
         self.assertIn('href="/analytics"', html)
         self.assertIn('href="/reports"', html)
-        # Profile & Settings are NOT part of K.11/K.12 and stay placeholders.
-        self.assertEqual(html.count("soon-badge"), 2)
-        self.assertIn('aria-disabled="true">Profile', html)
+        # Profile shipped as a real page (Account section); Settings is the
+        # only remaining deferred placeholder.
+        self.assertEqual(html.count("soon-badge"), 1)
+        self.assertNotIn('aria-disabled="true">Profile', html)
         self.assertIn('aria-disabled="true">Settings', html)
 
 

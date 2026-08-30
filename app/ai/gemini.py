@@ -104,9 +104,12 @@ def _sdk_transport(api_key, model, base_url=None, timeout_seconds=None):
     from google.genai import types
 
     try:
-        from httpx import TimeoutException as _httpx_timeout
+        from httpx import (
+            HTTPError as _httpx_http_error,
+            TimeoutException as _httpx_timeout,
+        )
     except ImportError:  # pragma: no cover - httpx ships with the SDK
-        _httpx_timeout = None
+        _httpx_http_error = _httpx_timeout = None
     timeout_errors = (socket.timeout, TimeoutError) + ((_httpx_timeout,) if _httpx_timeout else ())
 
     options = {}
@@ -144,6 +147,8 @@ def _sdk_transport(api_key, model, base_url=None, timeout_seconds=None):
             raise GeminiAPIError(status, f"Gemini API error (HTTP {status}): {message}")
         except timeout_errors:
             raise GeminiTimeoutError("Gemini request timed out.")
+        except _httpx_http_error as exc:
+            raise GeminiAPIError(0, f"Network error reaching Gemini: {exc}")
         except OSError as exc:
             raise GeminiAPIError(0, f"Network error reaching Gemini: {exc}")
         return _extract_text(response)

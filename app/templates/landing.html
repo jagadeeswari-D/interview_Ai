@@ -1,55 +1,441 @@
-{% extends "base.html" %}
-{% block title %}InterviewIQ — Practice Your Next Interview{% endblock %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="InterviewIQ — AI-powered mock interview practice for students and fresh graduates.">
+  <title>InterviewIQ — Practice Your Next Interview</title>
+  <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body class="landing">
+  <div class="ln-ambient" id="ambient" aria-hidden="true"></div>
+  <div class="ln-rail" aria-hidden="true"><span class="ln-rail-fill" id="railFill"></span></div>
+  <div class="ln-cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-{% block public_content %}
-<section class="hero">
-  <div class="hero-inner">
-    <p class="hero-eyebrow">AI-Powered Mock Interview Practice</p>
-    <h1 class="hero-title">Master your next interview with a personal AI coach.</h1>
-    <p class="hero-subtitle">
-      InterviewIQ turns interview prep into a closed loop:
-      practice, simulate, get evaluated on five dimensions, and follow a
-      personalized learning roadmap until you're ready.
-    </p>
-    <div class="hero-actions">
-      <a class="button button-primary button-large" href="{{ url_for('auth.register') }}">Create free account</a>
-      <a class="button button-ghost button-large" href="{{ url_for('auth.login') }}">Log in</a>
-    </div>
-  </div>
-</section>
+  <a class="ln-skip" href="#ln-content">Skip to content</a>
 
-<section class="section">
-  <h2 class="section-title">How it works</h2>
-  <div class="card-grid">
-    <div class="card">
-      <h3 class="card-title">1. Practice &amp; simulate</h3>
-      <p class="card-text">Pick a topic for guided Smart Practice, or run a timed, pressure-realistic Real Interview.</p>
+  <header class="ln-nav" id="ln-nav">
+    <a class="ln-brand" href="#top">InterviewIQ</a>
+    <nav class="ln-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="{{ url_for('practice.pick') }}">Practice</a>
+      <a href="{{ url_for('interview.config') }}">Real Interview</a>
+    </nav>
+    <div class="ln-nav-right">
+      <button type="button" id="theme-toggle" class="ln-theme"
+              aria-label="Switch to light theme">
+        <svg class="ln-theme-icon is-sun" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+        <svg class="ln-theme-icon is-moon" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+      <a class="ln-cta" href="{{ url_for('auth.register') }}">Get Started</a>
     </div>
-    <div class="card">
-      <h3 class="card-title">2. Get AI evaluation</h3>
-      <p class="card-text">Every answer is scored across technical accuracy, relevance, completeness, clarity, and communication.</p>
-    </div>
-    <div class="card">
-      <h3 class="card-title">3. Learn &amp; re-attempt</h3>
-      <p class="card-text">Weak spots become a day-by-day roadmap. Retry until your readiness score improves.</p>
-    </div>
-  </div>
-</section>
+  </header>
 
-<section class="section">
-  <h2 class="section-title">Built for the full loop</h2>
-  <div class="feature-grid">
-    <div class="feature-item"><strong>Smart Practice Mode</strong><span>Guided questions with hints and model answers.</span></div>
-    <div class="feature-item"><strong>AI Real Interview Mode</strong><span>Adaptive questions on a timer, evaluated at the end.</span></div>
-    <div class="feature-item"><strong>Adaptive follow-ups</strong><span>Follow-ups probe deeper into what you actually said.</span></div>
-    <div class="feature-item"><strong>Weakness detection</strong><span>Repeated mistakes are tracked over time.</span></div>
-    <div class="feature-item"><strong>Learning roadmap</strong><span>A personal day-by-day plan tied to your gaps.</span></div>
-    <div class="feature-item"><strong>Interview memory</strong><span>Previous weak topics prioritize your next session.</span></div>
-  </div>
-</section>
+  <main id="ln-content">
+    <div id="top"></div>
 
-<section class="section section-cta">
-  <h2 class="section-title">Start your first practice session</h2>
-  <a class="button button-primary button-large" href="{{ url_for('auth.register') }}">Get started with InterviewIQ</a>
-</section>
-{% endblock %}
+    <!-- 1 · HERO -->
+    <section class="ln-hero" id="hero" aria-label="Hero">
+      <div class="ln-hero-bg" id="heroBg" aria-hidden="true"></div>
+      <div class="ln-hero-grid" id="heroGrid" aria-hidden="true"></div>
+      <div class="ln-ghost" aria-hidden="true">INTERVIEW</div>
+      <div class="ln-motes" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i>
+      </div>
+
+      <div class="ln-hero-copy">
+        <p class="ln-eyebrow">AI-Powered Interview Practice</p>
+        <h1 class="ln-title">
+          <span class="ln-title-line">Interview smarter.</span>
+          <span class="ln-title-line accent">Perform better.</span>
+        </h1>
+        <p class="ln-sub">AI-powered interview practice, realistic simulations, and performance insights — built to help you improve with every attempt.</p>
+        <div class="ln-hero-actions">
+          <a class="ln-btn ln-btn-primary" href="{{ url_for('auth.register') }}">Get Started</a>
+          <a class="ln-btn ln-btn-ghost" href="{{ url_for('interview.config') }}">Explore Real Interview</a>
+        </div>
+      </div>
+
+      <div class="ln-scroll-hint" id="heroHint" aria-hidden="true">Scroll</div>
+    </section>
+
+    <!-- 2 · THE INTERVIEW -->
+    <section class="ln-stage2" id="stage2" aria-label="The Interview">
+      <div class="ln-scene-glow is-center" aria-hidden="true"></div>
+      <p class="ln-scene-tag ln-scene-tag-center"><span class="ln-scene-num">01</span>The Interview</p>
+      <div class="ln-stage">
+        <div class="ln-stage-scene" id="heroScene" aria-hidden="true">
+          <div class="ln-aq-layer" data-depth="0.5" data-z="26">
+            <div class="ln-float ln-float-a">
+              <div class="aq-panel">
+                <div class="aq-head">AI Interview<span class="aq-live">●</span></div>
+                <div class="aq-qnum">Question 04</div>
+                <p class="aq-q">Tell me about a challenging project you worked on.</p>
+                <div class="aq-wave" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="aq-row">
+                  <span class="aq-time">02:41</span>
+                  <span class="aq-state">Recording answer</span>
+                  <svg class="aq-mic" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                       stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                    <path d="M12 18v4"></path>
+                  </svg>
+                </div>
+                <div class="aq-progress"><span class="aq-bar"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ln-aq-card aqc-1" data-depth="0.8" data-z="120" data-spread="1">
+            <div class="ln-float ln-float-b"><div class="aq-card">Confidence<strong>87%</strong></div></div>
+          </div>
+          <div class="ln-aq-card aqc-2" data-depth="0.7" data-z="80" data-spread="1">
+            <div class="ln-float ln-float-c"><div class="aq-card">Communication<strong>92%</strong></div></div>
+          </div>
+          <div class="ln-aq-card aqc-3" data-depth="0.55" data-z="60" data-spread="1">
+            <div class="ln-float ln-float-d"><div class="aq-card">Technical<strong>81%</strong></div></div>
+          </div>
+          <div class="ln-aq-card aqc-4" data-depth="1.0" data-z="90" data-spread="1">
+            <div class="ln-float ln-float-e"><div class="aq-card"><span>Strength</span>Problem Solving</div></div>
+          </div>
+          <div class="ln-aq-card aqc-5" data-depth="0.6" data-z="70" data-spread="1">
+            <div class="ln-float ln-float-b"><div class="aq-card"><span>Improve</span>Conciseness</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · PROBLEM / HOOK -->
+    <section class="ln-editorial">
+      <div class="ln-ed-bg" aria-hidden="true"></div>
+      <i class="ln-ed-light" aria-hidden="true"></i>
+      <p class="ln-scene-tag"><span class="ln-scene-num">02</span>The Problem</p>
+      <p class="ln-big" data-split>Interviews aren't just about knowing the answer.</p>
+      <p class="ln-big ln-big-sub" data-split>They're about how you think, communicate, adapt, and respond under pressure.</p>
+    </section>
+
+    <!-- 4 · INTERVIEW AI PRODUCT SCREEN -->
+    <section class="ln-reimagine ln-product" id="product">
+      <div class="ln-scene-glow is-right" aria-hidden="true"></div>
+      <div class="ln-reimagine-inner">
+        <div class="ln-reimagine-left">
+          <div>
+            <p class="ln-scene-tag"><span class="ln-scene-num">03</span>The Product</p>
+            <h2 class="ln-reimagine-title" data-split>Meet the Interview AI.</h2>
+            <p class="ln-product-sub">One coach that queues the question, listens, and scores every dimension of your answer.</p>
+          </div>
+        </div>
+        <div class="ln-reimagine-right">
+          <div class="ln-reimagine-visual" aria-hidden="true">
+            <div class="ln-rv-device">
+              <div class="ln-rv-chrome">
+                <span></span><span></span><span></span>
+                <strong class="ln-rv-brand">Interview AI · Live session</strong>
+              </div>
+              <div class="ln-ai-wave">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <svg class="ln-ai-line" viewBox="0 0 400 120" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="aiArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#7c8cff" stop-opacity="0.4"></stop>
+                    <stop offset="1" stop-color="#7c8cff" stop-opacity="0"></stop>
+                  </linearGradient>
+                </defs>
+                <path class="ln-ai-area" d="M0 98 C 45 92, 70 74, 98 78 S 150 60, 180 66 S 240 40, 270 46 S 330 22, 400 12 L 400 120 L 0 120 Z"></path>
+                <path class="ln-ai-main" d="M0 98 C 45 92, 70 74, 98 78 S 150 60, 180 66 S 240 40, 270 46 S 330 22, 400 12"
+                      pathLength="1" id="aiPath"></path>
+              </svg>
+              <div class="ln-ai-metrics">
+                <div class="ln-ai-m"><span>Confidence</span><i><b class="w87"></b></i><em>87%</em></div>
+                <div class="ln-ai-m"><span>Technical</span><i><b class="w82"></b></i><em>82%</em></div>
+                <div class="ln-ai-m"><span>Communication</span><i><b class="w91"></b></i><em>91%</em></div>
+                <div class="ln-ai-m"><span>Problem Solving</span><i><b class="w89"></b></i><em>89%</em></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · SMART PRACTICE -->
+    <section class="ln-smart" id="smart" aria-label="Smart Practice">
+      <div class="ln-scene-glow is-center" aria-hidden="true"></div>
+      <p class="ln-scene-tag ln-scene-tag-center"><span class="ln-scene-num">04</span>Smart Practice</p>
+      <h2 class="ln-sec-title">Practice without pressure.</h2>
+
+      <div class="ln-smart-stage">
+        <div class="ln-smart-card" id="spCard">
+          <div class="ln-smart-head">Smart Practice<span class="ln-smart-live">● Guided mode</span></div>
+          <div class="ln-smart-body">
+            <div class="ln-sp-row ln-sp-row-top">
+              <span class="ln-sp-label">Choose topic</span>
+              <span class="ln-sp-chip">Data Structures</span>
+            </div>
+            <div class="ln-sp-row ln-sp-row-q">
+              <span class="ln-sp-label">Question</span>
+              <p class="ln-sp-q">What is the time complexity of binary search?</p>
+              <span class="ln-sp-diff"><i class="on"></i><i class="on"></i><i class="on"></i>Easy</span>
+            </div>
+            <div class="ln-sp-row">
+              <span class="ln-sp-label">Hint</span>
+              <p class="ln-sp-hint">Each step cuts the search space in half.</p>
+            </div>
+            <div class="ln-sp-row">
+              <span class="ln-sp-label">Your answer</span>
+              <p class="ln-sp-answer" aria-hidden="true">O(log n) — the interval shrinks by half on every comparison…</p>
+            </div>
+            <div class="ln-sp-row ln-sp-row-fb">
+              <span class="ln-sp-label">AI feedback</span>
+              <div class="ln-sp-fb"><span>Clear structure, good justification</span><b>+12</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · CHOOSE YOUR MODE -->
+    <section class="ln-modes" id="modes">
+      <p class="ln-scene-tag ln-scene-tag-center"><span class="ln-scene-num">05</span>Choose Your Mode</p>
+      <h2 class="ln-sec-title">Two modes, one loop</h2>
+      <div class="ln-mode-grid" id="modeGrid">
+        <article class="ln-mode" id="modePractice" data-mode>
+          <span class="ln-mode-idx" aria-hidden="true">01</span>
+          <div class="ln-mode-body">
+            <p class="ln-mode-kicker"><span class="ln-mode-dot" aria-hidden="true"></span>Smart Practice</p>
+            <h3>Practice without pressure.</h3>
+            <p class="ln-mode-sub">Topic-based questions, hints, and instant feedback at your own pace.</p>
+            <ul>
+              <li>Topic-based questions</li>
+              <li>Instant AI feedback</li>
+              <li>Hints</li>
+              <li>Model answers</li>
+              <li>Skill improvement</li>
+            </ul>
+            <div class="ln-mode-mock" aria-hidden="true">
+              <span>Topic · Arrays</span><span>Instant feedback</span><span>Hint available</span>
+            </div>
+            <a class="ln-link" href="{{ url_for('practice.pick') }}">Start practicing &rarr;</a>
+          </div>
+        </article>
+        <article class="ln-mode" id="modeInterview" data-mode>
+          <span class="ln-mode-idx" aria-hidden="true">02</span>
+          <div class="ln-mode-body">
+            <p class="ln-mode-kicker"><span class="ln-mode-dot" aria-hidden="true"></span>AI Real Interview</p>
+            <h3>Experience the real thing.</h3>
+            <p class="ln-mode-sub">Timed, sequential, adaptive — a full interview that follows up on your answers.</p>
+            <ul>
+              <li>Timed interview</li>
+              <li>Sequential questions</li>
+              <li>Adaptive follow-ups</li>
+              <li>No interruption</li>
+              <li>Final evaluation</li>
+            </ul>
+            <div class="ln-mode-mock" aria-hidden="true">
+              <span>Q 05 / 08</span><span>02:41</span><span>Adaptive follow-up</span>
+            </div>
+            <a class="ln-link" href="{{ url_for('interview.config') }}">Run an interview &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 7 · HOW IT WORKS (sticky centre visual) -->
+    <section class="ln-workflow" id="how">
+      <p class="ln-scene-tag ln-scene-tag-center"><span class="ln-scene-num">06</span>How It Works</p>
+      <h2 class="ln-sec-title">The loop</h2>
+      <div class="ln-how">
+        <div class="ln-how-stepcol">
+          <div class="ln-how-track" aria-hidden="true"><span class="ln-track-fill" id="trackFill"></span></div>
+          <ol class="ln-how-steps" id="howSteps">
+            <li class="ln-how-step" data-step>
+              <span class="ln-how-num">01</span>
+              <div class="ln-how-copy"><h3>Practice</h3><p>Guided topic sessions build your first answers.</p></div>
+            </li>
+            <li class="ln-how-step" data-step>
+              <span class="ln-how-num">02</span>
+              <div class="ln-how-copy"><h3>Simulate</h3><p>Timed, pressure-real questions in sequence.</p></div>
+            </li>
+            <li class="ln-how-step" data-step>
+              <span class="ln-how-num">03</span>
+              <div class="ln-how-copy"><h3>Evaluate</h3><p>Five dimensions scored by the AI coach.</p></div>
+            </li>
+            <li class="ln-how-step" data-step>
+              <span class="ln-how-num">04</span>
+              <div class="ln-how-copy"><h3>Identify gaps</h3><p>Patterns become a named weakness list.</p></div>
+            </li>
+            <li class="ln-how-step" data-step>
+              <span class="ln-how-num">05</span>
+              <div class="ln-how-copy"><h3>Improve</h3><p>A day-by-day roadmap targets each gap.</p></div>
+            </li>
+            <li class="ln-how-step" data-step>
+              <span class="ln-how-num">06</span>
+              <div class="ln-how-copy"><h3>Re-attempt</h3><p>Retry and watch your readiness climb.</p></div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="ln-how-visual" aria-hidden="true">
+          <div class="ln-how-stage" id="howStage">
+            <div class="ln-how-screen">
+              <div class="ln-hs-head">Smart Practice</div>
+              <p class="ln-hs-q">What is the time complexity of binary search?</p>
+              <div class="ln-hs-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="ln-how-screen">
+              <div class="ln-hs-head">AI Real Interview <i>Q 05 / 08</i></div>
+              <p class="ln-hs-timer">02:41</p>
+              <div class="ln-hs-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="ln-hs-progress"></div>
+            </div>
+            <div class="ln-how-screen">
+              <div class="ln-hs-head">Evaluation</div>
+              <div class="ln-hs-bars">
+                <span><em>Technical</em><i><b class="b83"></b></i></span>
+                <span><em>Communication</em><i><b class="b91"></b></i></span>
+                <span><em>Confidence</em><i><b class="b87"></b></i></span>
+                <span><em>Problem Solving</em><i><b class="b89"></b></i></span>
+              </div>
+            </div>
+            <div class="ln-how-screen">
+              <div class="ln-hs-head">Weakness map</div>
+              <div class="ln-hs-chips"><span>Conciseness</span><span>Structure</span><span>Specific numbers</span></div>
+            </div>
+            <div class="ln-how-screen">
+              <div class="ln-hs-head">Day-by-day roadmap</div>
+              <div class="ln-hs-road">
+                <span class="done">Day 1 · Question foundation</span>
+                <span class="done">Day 2 · Answer structure</span>
+                <span class="today">Day 3 · Simulate</span>
+                <span>Day 4 · Re-evaluate</span>
+              </div>
+            </div>
+            <div class="ln-how-screen">
+              <div class="ln-hs-head">Re-readiness</div>
+              <span class="ln-hs-ring">86</span>
+              <p class="ln-hs-note">+12 vs your last attempt</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · SEE YOUR PROGRESS -->
+    <section class="ln-dash-sec" id="progress">
+      <p class="ln-scene-tag ln-scene-tag-center"><span class="ln-scene-num">07</span>See Your Progress</p>
+      <h2 class="ln-sec-title">Your data, not a guess</h2>
+      <div class="ln-dash" id="dash">
+        <div class="ln-syp-ringwrap">
+          <svg class="ln-syp-svg" viewBox="0 0 280 280" aria-hidden="true">
+            <circle class="ring r1" cx="140" cy="140" r="120" pathLength="100"></circle>
+            <circle class="ring r2" cx="140" cy="140" r="96" pathLength="100"></circle>
+            <circle class="ring r3" cx="140" cy="140" r="72" pathLength="100"></circle>
+          </svg>
+          <div class="ln-syp-center">
+            <span class="ln-dash-num" id="scoreNum">86</span>
+            <span class="ln-dash-cap">Overall Score</span>
+          </div>
+          <span class="ln-syp-ring-label" aria-hidden="true">Interview IQ</span>
+        </div>
+        <div class="ln-syp-metrics">
+          <article class="ln-metric"><span class="ln-metric-name">Confidence</span><b>87</b><i class="ln-metric-track"><em class="ln-metric-fill w87"></em></i></article>
+          <article class="ln-metric"><span class="ln-metric-name">Technical</span><b>82</b><i class="ln-metric-track"><em class="ln-metric-fill w82"></em></i></article>
+          <article class="ln-metric"><span class="ln-metric-name">Communication</span><b>91</b><i class="ln-metric-track"><em class="ln-metric-fill w91"></em></i></article>
+          <article class="ln-metric"><span class="ln-metric-name">Problem Solving</span><b>89</b><i class="ln-metric-track"><em class="ln-metric-fill w89"></em></i></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · CAPABILITIES (content unchanged) -->
+    <section class="ln-stack-sec" id="features">
+      <p class="ln-scene-tag ln-scene-tag-center"><span class="ln-scene-num">08</span>Capabilities</p>
+      <h2 class="ln-sec-title">Built for the full loop</h2>
+      <div class="ln-stack" id="stack">
+        <article class="ln-stack-card">
+          <div class="ln-stack-inner">
+            <span class="ln-stack-idx">01</span>
+            <h3>AI Question Generation</h3>
+            <p>Questions generated specifically for your selected topic and skill level.</p>
+          </div>
+        </article>
+        <article class="ln-stack-card">
+          <div class="ln-stack-inner">
+            <span class="ln-stack-idx">02</span>
+            <h3>Adaptive Follow-Ups</h3>
+            <p>The interview reacts to your answers and continues naturally.</p>
+          </div>
+        </article>
+        <article class="ln-stack-card">
+          <div class="ln-stack-inner">
+            <span class="ln-stack-idx">03</span>
+            <h3>End-of-Interview Evaluation</h3>
+            <p>Receive a structured evaluation after the interview ends.</p>
+          </div>
+        </article>
+        <article class="ln-stack-card">
+          <div class="ln-stack-inner">
+            <span class="ln-stack-idx">04</span>
+            <h3>Personalized Roadmap</h3>
+            <p>Turn weaknesses into a focused improvement plan.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 10 · TRUST -->
+    <section class="ln-trust">
+      <p class="ln-big" data-split>Practice should show you where you're weak — not just whether you're right.</p>
+      <div class="ln-trust-chips">
+        <span>AI-powered</span><span>Adaptive</span><span>Performance-focused</span>
+      </div>
+    </section>
+
+    <!-- 11 · FINAL CTA -->
+    <section class="ln-cta-sec" id="cta">
+      <div class="ln-cta-glow" id="ctaGlow" aria-hidden="true"></div>
+      <p class="ln-eyebrow ln-eyebrow-center">Ready?</p>
+      <h2 class="ln-cta-title">Your next interview starts here.</h2>
+      <p class="ln-cta-sub">Practice smarter. Simulate realistically. Improve continuously.</p>
+      <div class="ln-cta-actions">
+        <a class="ln-btn ln-btn-primary ln-btn-lg" href="{{ url_for('auth.register') }}">Start Practicing</a>
+        <a class="ln-btn ln-btn-ghost ln-btn-lg" href="{{ url_for('interview.config') }}">Explore Real Interview</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="ln-footer">
+    <span class="ln-footer-brand">InterviewIQ</span>
+    <nav class="ln-footer-links" aria-label="Footer">
+      <a href="#features">Features</a>
+      <a href="{{ url_for('practice.pick') }}">Practice</a>
+      <a href="{{ url_for('interview.config') }}">Real Interview</a>
+      <a href="#top">About</a>
+    </nav>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+</body>
+</html>

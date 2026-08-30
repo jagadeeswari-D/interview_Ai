@@ -47,6 +47,29 @@ def get_profile(user_id):
     ).fetchone()
 
 
+def update_user_name(user_id, name):
+    """Update the display name on the users row (Profile page)."""
+    db = get_db()
+    db.execute("UPDATE users SET name = ? WHERE id = ?", (name, user_id))
+    db.commit()
+
+
+def set_profile_details(user_id, role, skills):
+    """Persist target role and skills list (Profile page, Section E).
+
+    `skills` is a list of strings stored as a JSON array. Only these two
+    columns are written: resume_path and everything else on the row are
+    untouched, so Resume Analysis state survives profile edits.
+    """
+    db = get_db()
+    db.execute(
+        "UPDATE profiles SET role = ?, skills = ?, "
+        "updated_at = datetime('now') WHERE user_id = ?",
+        (role, json.dumps(skills), user_id),
+    )
+    db.commit()
+
+
 def set_resume_path(user_id, path):
     """Record where the user's uploaded resume PDF is stored (Stage 6)."""
     db = get_db()

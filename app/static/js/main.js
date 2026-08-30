@@ -33,15 +33,24 @@
     if (!button) return;
     var root = document.documentElement;
 
+    function target() {
+      return root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    }
+
+    function syncLabel() {
+      button.setAttribute("aria-label", "Switch to " + target() + " theme");
+    }
+
+    syncLabel();
     button.addEventListener("click", function () {
-      var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      var next = target();
       root.setAttribute("data-theme", next);
-      button.setAttribute("aria-label", "Switch to " + (next === "dark" ? "dark" : "light") + " theme");
       try {
         localStorage.setItem("interviewiq-theme", next);
       } catch (e) {
         /* ignore storage errors */
       }
+      syncLabel();
     });
   }
 

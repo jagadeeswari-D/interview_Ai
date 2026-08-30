@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +8,7 @@
   <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   {% if g.user %}
   <div class="app-shell">
 
@@ -43,7 +43,8 @@
            class="nav-link {{ 'active' if active_page == 'reports' }}">Reports</a>
 
         <span class="nav-section-label">Account</span>
-        <a class="nav-link is-disabled" href="#" aria-disabled="true">Profile <span class="soon-badge">Soon</span></a>
+        <a href="{{ url_for('profile.view') }}"
+           class="nav-link {{ 'active' if active_page == 'profile' }}">Profile</a>
         <a class="nav-link is-disabled" href="#" aria-disabled="true">Settings <span class="soon-badge">Soon</span></a>
       </nav>
 
@@ -53,7 +54,6 @@
           <span class="user-chip-name">{{ g.user.name }}</span>
         </div>
         <div class="sidebar-actions">
-          <button type="button" id="theme-toggle" class="icon-button" aria-label="Toggle light or dark theme">Theme</button>
           <form method="post" action="{{ url_for('auth.logout') }}">
             {{ csrf_token() }}
             <button type="submit" class="button button-ghost button-small">Log out</button>
@@ -68,6 +68,22 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <main class="content">
+      <div class="app-topbar">
+        <button type="button" id="theme-toggle" class="theme-toggle"
+                aria-label="Switch to light theme">
+          <svg class="theme-toggle-icon is-sun" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="theme-toggle-icon is-moon" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
       {% include "_flash.html" %}
       {% block content %}{% endblock %}
     </main>
@@ -75,11 +91,27 @@
 
   {% else %}
 
+  <div class="auth-backdrop" aria-hidden="true"></div>
+
   <header class="public-nav">
     <div class="public-nav-inner">
       <span class="brand-mark">IQ</span>
       <span class="brand-name">InterviewIQ</span>
       <div class="public-nav-links">
+        <button type="button" id="theme-toggle" class="theme-toggle"
+                aria-label="Switch to light theme">
+          <svg class="theme-toggle-icon is-sun" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="theme-toggle-icon is-moon" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
         <a class="button button-ghost" href="{{ url_for('auth.login') }}">Log in</a>
         <a class="button button-primary" href="{{ url_for('auth.register') }}">Get started</a>
       </div>

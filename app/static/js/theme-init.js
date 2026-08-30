@@ -4,16 +4,16 @@
 (function () {
   "use strict";
   var root = document.documentElement;
-  var theme = "light";
+  var theme = "dark";
   try {
     var stored = localStorage.getItem("interviewiq-theme");
     if (stored === "dark" || stored === "light") {
       theme = stored;
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      theme = "dark";
+    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+      theme = "light";
     }
   } catch (e) {
-    /* localStorage unavailable — keep default light theme. */
+    /* localStorage unavailable — keep default dark theme. */
   }
   root.setAttribute("data-theme", theme);
 })();

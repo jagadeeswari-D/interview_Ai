@@ -4,11 +4,19 @@
    scale, 10px radius, subtle 1px borders, CSS-variable theming.
    ========================================================================== */
 
-/* ---- 1. Theme tokens (light / dark) -------------------------------- */
+/* ---- 1. Theme tokens (light / dark) --------------------------------
+   InterviewIQ palette — premium editorial / luxury-tech, dark-first.
+   Backdrop #0C1519 Chinese Black · Sidebar #162127 Dark Jungle Green
+   Cards #1C262C charcoal · Accent #CF9D7B Antique Brass
+   Secondary #91664A Mocha · Warning #A34A5E Merlot burgundy
+   Text #F3ECE4 warm off-white · Muted #A89B8E beige-gray.
+   The DARK theme is the primary identity. The LIGHT theme below is a
+   refined warm-neutral derivative of the same palette so the existing
+   theme toggle keeps working. */
 :root {
   --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
              "Helvetica Neue", Arial, sans-serif;
-  --font-coach: Georgia, "Times New Roman", serif; /* reserved for AI voice later */
+  --font-coach: var(--font-ui); /* AI coach text — same sans stack, no serif */
 
   --radius: 10px;
   --radius-sm: 8px;
@@ -20,50 +28,72 @@
   --spacing-6: 32px;
   --spacing-7: 48px;
 
-  /* Light theme */
-  --bg: #f7f8fa;
-  --bg-elevated: #ffffff;
-  --bg-inset: #eef1f5;
-  --text: #1b2430;
-  --text-muted: #5b6b7c;
-  --border: #dfe4ea;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-contrast: #ffffff;
-  --primary-soft: #eceafd;
-  --success: #15803d;
-  --success-soft: #e7f6ec;
-  --danger: #b91c1c;
-  --danger-soft: #fdeaea;
-  --warning: #b45309;
-  --warning-soft: #fdf3e3;
-  --info: #0369a1;
-  --info-soft: #e5f2fb;
-  --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.06);
-  --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.35);
+  /* Light theme — warm-neutral cashmere surfaces, espresso text,
+     Antique Brass / Mocha accents. */
+  --bg: #f5f0ea;
+  --bg-elevated: #fffdf9;
+  --bg-inset: #ede6dc;
+  --sidebar-bg: #efe8df;
+  --text: #241b14;
+  --text-muted: #6d5f54;
+  --border: #ddd2c5;
+  --input-border: rgba(116, 88, 64, 0.35);
+  --primary: #cf9d7b;
+  --primary-hover: #b9845f;
+  --primary-text: #7a4e2d;
+  --primary-text-hover: #5f3a20;
+  --primary-contrast: #24120a;
+  --primary-soft: rgba(122, 78, 45, 0.12);
+  --success: #91664a;
+  --success-soft: rgba(145, 102, 74, 0.14);
+  --danger: #b23a46;
+  --danger-soft: rgba(178, 58, 70, 0.12);
+  --warning: #8c2b3d;
+  --warning-soft: rgba(140, 43, 61, 0.12);
+  --info: #8a5a36;
+  --info-soft: rgba(138, 90, 54, 0.1);
+  --active-bg: rgba(122, 78, 45, 0.14);
+  --hover-bg: #e6dcd2;
+  --chart-secondary: #91664a;
+  --glow-core: rgba(201, 134, 91, 0.38);
+  --glow-ring: rgba(145, 102, 74, 0.22);
+  --glow-ember: #9a6744;
+  --shadow-soft: 0 1px 2px rgba(70, 45, 28, 0.08);
+  --focus-ring: 0 0 0 3px rgba(140, 84, 46, 0.28);
 }
 
+/* Dark theme — the primary, editorial near-black identity. */
 [data-theme="dark"] {
-  --bg: #0e1420;
-  --bg-elevated: #151d2c;
-  --bg-inset: #0b101a;
-  --text: #e7ecf3;
-  --text-muted: #93a1b4;
-  --border: #263247;
-  --primary: #7c74f0;
-  --primary-hover: #968ff4;
-  --primary-contrast: #ffffff;
-  --primary-soft: #23213f;
-  --success: #4ade80;
-  --success-soft: #12261b;
-  --danger: #f87171;
-  --danger-soft: #2b1618;
-  --warning: #fbbf24;
-  --warning-soft: #2b2110;
-  --info: #38bdf8;
-  --info-soft: #0f2233;
-  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --focus-ring: 0 0 0 3px rgba(124, 116, 240, 0.4);
+  --bg: #0c1519;
+  --bg-elevated: #1c262c;
+  --bg-inset: #141d22;
+  --sidebar-bg: #162127;
+  --text: #f3ece4;
+  --text-muted: #a89b8e;
+  --border: #2b3438;
+  --input-border: rgba(203, 178, 156, 0.28);
+  --primary: #cf9d7b;
+  --primary-hover: #dbb089;
+  --primary-text: #cf9d7b;
+  --primary-text-hover: #e0b691;
+  --primary-contrast: #201008;
+  --primary-soft: rgba(207, 157, 123, 0.14);
+  --success: #cf9d7b;
+  --success-soft: rgba(207, 157, 123, 0.14);
+  --danger: #c95a60;
+  --danger-soft: rgba(201, 90, 96, 0.14);
+  --warning: #a34a5e;
+  --warning-soft: rgba(163, 74, 94, 0.16);
+  --info: #cf9d7b;
+  --info-soft: rgba(207, 157, 123, 0.1);
+  --active-bg: rgba(207, 157, 123, 0.14);
+  --hover-bg: #1f2a30;
+  --chart-secondary: #9a6744;
+  --glow-core: rgba(207, 157, 123, 0.5);
+  --glow-ring: rgba(224, 182, 145, 0.3);
+  --glow-ember: #cf9d7b;
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --focus-ring: 0 0 0 3px rgba(207, 157, 123, 0.35);
 }
 
 /* ---- 2. Reset & base ------------------------------------------------ */
@@ -92,12 +122,12 @@ h1, h2, h3, p {
 }
 
 a {
-  color: var(--primary);
+  color: var(--primary-text);
   text-decoration: none;
 }
 
 a:hover {
-  color: var(--primary-hover);
+  color: var(--primary-text-hover);
   text-decoration: underline;
 }
 
@@ -155,8 +185,8 @@ img {
 }
 
 .button-ghost:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--primary-text);
+  color: var(--primary-text);
   text-decoration: none;
 }
 
@@ -187,8 +217,59 @@ img {
 }
 
 .icon-button:hover {
-  color: var(--primary);
-  border-color: var(--primary);
+  color: var(--primary-text);
+  border-color: var(--primary-text);
+}
+
+/* Top-right light/dark toggle (app pages and public pages). */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--bg-elevated);
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  outline: none;
+  color: var(--primary-text);
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.theme-toggle-icon {
+  display: none;
+}
+
+/* The shown icon = the theme you switch TO (sun in dark, moon in light). */
+[data-theme="dark"] .theme-toggle-icon.is-sun {
+  display: block;
+}
+
+[data-theme="light"] .theme-toggle-icon.is-moon {
+  display: block;
+}
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-5);
 }
 
 /* ---- 4. Cards -------------------------------------------------------- */
@@ -230,7 +311,7 @@ img {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-elevated);
+  background-color: var(--sidebar-bg);
   border-right: 1px solid var(--border);
 }
 
@@ -290,13 +371,13 @@ img {
 }
 
 .nav-link:hover {
-  background-color: var(--bg-inset);
+  background-color: var(--hover-bg);
   text-decoration: none;
 }
 
 .nav-link.active {
-  background-color: var(--primary-soft);
-  color: var(--primary);
+  background-color: var(--active-bg);
+  color: var(--primary-text);
 }
 
 .nav-link.is-disabled {
@@ -343,7 +424,7 @@ img {
   height: 32px;
   border-radius: 50%;
   background-color: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -407,8 +488,119 @@ img {
 
 /* ---- 8. Hero & landing sections ---------------------------------------- */
 .hero {
+  position: relative;
+  overflow: hidden;
   padding: var(--spacing-7) var(--spacing-5) var(--spacing-6);
+  min-height: min(84vh, 820px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+}
+
+/* Animated "bloom" backdrop (visual reference: a warm light swelling to
+   fill the frame, ~8s loop). Layers sit behind the copy; the veil vignette
+   keeps text readable. */
+.hero-bloom {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+  animation: iq-bloom-drift 9s ease-in-out alternate infinite;
+}
+
+.hero-bloom .bloom-core,
+.hero-bloom .bloom-ring,
+.hero-bloom .bloom-veil {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -58%);
+}
+
+.bloom-core {
+  width: 120vmin;
+  height: 120vmin;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    var(--glow-core) 0%,
+    rgba(255, 255, 255, 0.22) 34%,
+    transparent 70%
+  );
+  filter: blur(6px);
+  opacity: 0.85;
+  animation: iq-bloom-core 8s ease-in-out infinite;
+}
+
+.bloom-ring {
+  width: 46vmin;
+  height: 46vmin;
+  border-radius: 50%;
+  border: 1px solid var(--glow-ring);
+  box-shadow: 0 0 34px -6px var(--glow-ring), inset 0 0 30px -12px var(--glow-core);
+  opacity: 0;
+  animation: iq-bloom-ring 8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.bloom-ring:nth-of-type(2) { animation-delay: -2.6s; }
+.bloom-ring:nth-of-type(3) { animation-delay: -5.3s; }
+
+.bloom-veil {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  background: radial-gradient(
+    ellipse 90% 78% at 50% 46%,
+    transparent 34%,
+    rgba(0, 0, 0, 0.1) 62%,
+    var(--bg) 88%
+  );
+}
+
+.hero-bloom .ember {
+  position: absolute;
+  bottom: 2%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, var(--glow-ember) 55%, transparent 72%);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: iq-ember-rise var(--dur, 7s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes iq-bloom-core {
+  0%   { transform: translate(-50%, -58%) scale(0.82); opacity: 0.5; }
+  46%  { transform: translate(-50%, -58%) scale(1.06); opacity: 0.95; }
+  62%  { transform: translate(-50%, -58%) scale(1.02); opacity: 0.85; }
+  100% { transform: translate(-50%, -58%) scale(1.16); opacity: 0.62; }
+}
+
+@keyframes iq-bloom-ring {
+  0%   { transform: translate(-50%, -58%) scale(0.78); opacity: 0.55; }
+  22%  { opacity: 0.8; }
+  78%  { transform: translate(-50%, -58%) scale(1.9); opacity: 0.18; }
+  100% { transform: translate(-50%, -58%) scale(2.2); opacity: 0; }
+}
+
+@keyframes iq-bloom-drift {
+  from { transform: translateY(1.2vh) scale(1); }
+  to   { transform: translateY(-1.8vh) scale(1.04); }
+}
+
+@keyframes iq-ember-rise {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+  7%   { opacity: 0.8; }
+  55%  { opacity: 0.42; }
+  100% { transform: translate3d(var(--dx, 40px), -92vh, 0) scale(0.32); opacity: 0; }
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-eyebrow {
@@ -416,7 +608,7 @@ img {
   padding: 5px 12px;
   border-radius: 999px;
   background-color: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -539,9 +731,9 @@ img {
 
 .field-input {
   padding: 10px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
-  background-color: var(--bg);
+  background-color: var(--bg-inset);
   color: var(--text);
   font: inherit;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -549,7 +741,7 @@ img {
 
 .field-input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--primary-text);
   box-shadow: var(--focus-ring);
 }
 
@@ -557,6 +749,76 @@ img {
   color: var(--text-muted);
   font-size: 0.825rem;
   margin: 0;
+}
+
+/* ---- 9b. Standalone form controls ------------------------------------
+   Theme the few inputs/selects that don't carry the .field-input class
+   (e.g. the Resume upload form and inline difficulty pickers). */
+
+select {
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-inset);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+select option {
+  background-color: var(--bg-elevated);
+  color: var(--text);
+}
+
+.stack-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.form-field label {
+  font-weight: 600;
+  font-size: 0.925rem;
+}
+
+input[type="file"] {
+  color: var(--text-muted);
+  font: inherit;
+}
+
+input[type="file"]::file-selector-button {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-elevated);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  margin-right: var(--spacing-3);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  border-color: var(--primary-text);
+  color: var(--primary-text);
+}
+
+input[type="file"]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 /* ---- 10. Dashboard ------------------------------------------------------- */
@@ -599,6 +861,11 @@ img {
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+/* Dashboard Readiness is the hero metric — Antique Brass highlight. */
+.stat-grid > .card:first-child .stat-value {
+  color: var(--primary-text);
 }
 
 .stat-note {
@@ -696,7 +963,7 @@ img {
 .error-code {
   font-size: 3.5rem;
   margin-bottom: var(--spacing-2);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .error-message {
@@ -761,7 +1028,7 @@ img {
     position: fixed;
     inset: 0;
     z-index: 35;
-    background-color: rgba(10, 14, 22, 0.5);
+    background-color: rgba(3, 12, 10, 0.6);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.22s ease;
@@ -791,10 +1058,10 @@ img {
 .badge {
   display: inline-block;
   padding: 2px var(--spacing-2);
-  border: 1px solid var(--primary);
+  border: 1px solid var(--primary-text);
   border-radius: 999px;
   background-color: var(--primary-soft);
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -875,6 +1142,10 @@ img {
 .score-overall {
   display: flex;
   flex-direction: column;
+}
+
+.score-overall .stat-value {
+  color: var(--primary-text);
 }
 
 .score-denominator {
@@ -1161,8 +1432,8 @@ img {
 
 .replay-jump-link:hover,
 .replay-jump-link:focus-visible {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--primary-text);
+  color: var(--primary-text);
 }
 
 .replay-jump-link.is-current {
@@ -1210,7 +1481,7 @@ img {
 
 .roadmap-day.is-completed {
   opacity: 0.75;
-  border-color: var(--success);
+  border-color: var(--primary-text);
 }
 
 .roadmap-day-main {
@@ -1231,9 +1502,9 @@ img {
 }
 
 .roadmap-status-badge.is-done {
-  background-color: var(--success-soft);
-  color: var(--success);
-  border-color: var(--success);
+  background-color: var(--primary-soft);
+  color: var(--primary-text);
+  border-color: var(--primary-text);
 }
 
 /* Checkbox-style progress toggle: a form button so it works without JS. */
@@ -1256,7 +1527,7 @@ img {
 
 .roadmap-toggle:hover,
 .roadmap-toggle:focus-visible {
-  border-color: var(--primary);
+  border-color: var(--primary-text);
   outline: none;
   box-shadow: var(--focus-ring);
 }
@@ -1270,13 +1541,13 @@ img {
 }
 
 .roadmap-toggle.is-checked {
-  border-color: var(--success);
-  background: var(--success-soft);
+  border-color: var(--primary-text);
+  background: var(--primary-soft);
 }
 
 .roadmap-toggle.is-checked .checkmark {
-  border-left-color: var(--success);
-  border-bottom-color: var(--success);
+  border-left-color: var(--primary-text);
+  border-bottom-color: var(--primary-text);
 }
 
 /* ==========================================================================
@@ -1301,7 +1572,7 @@ img {
 }
 
 a.stat-link {
-  color: var(--primary);
+  color: var(--primary-text);
   text-decoration: none;
 }
 
@@ -1319,7 +1590,7 @@ a.stat-link:focus-visible {
 
 .sparkline polyline {
   fill: none;
-  stroke: var(--primary);
+  stroke: var(--primary-text);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1331,6 +1602,10 @@ a.stat-link:focus-visible {
   gap: var(--spacing-3);
   margin: var(--spacing-4) 0;
   flex-wrap: wrap;
+}
+
+.readiness-summary .stat-value {
+  color: var(--primary-text);
 }
 
 .readiness-table {
@@ -1477,5 +1752,306 @@ a.stat-link:focus-visible {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* ==========================================================================
+   13. Auth pages — InterviewIQ landing design language
+   The Login / Register screens are re-tokened to the landing-page identity
+   (near-black base, warm off-white light mode, electric #7C8CFF accent) and
+   recomposed as a single centered glass panel on a subtle grid + ambient
+   glow backdrop. Markup, form fields, and auth logic are untouched — only
+   visual tokens and scoped component styling are added.
+   ========================================================================== */
+
+body.auth-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---- Auth page theme tokens (same values as the landing page) ---- */
+[data-theme="dark"] body.auth-page {
+  --bg: #08090b;
+  --bg-elevated: #101319;
+  --bg-inset: #0b0e13;
+  --sidebar-bg: #0d0f13;
+  --text: #f2f3f5;
+  --text-muted: #9aa0aa;
+  --border: rgba(255, 255, 255, 0.09);
+  --input-border: rgba(255, 255, 255, 0.17);
+  --primary: #7c8cff;
+  --primary-hover: #93a1ff;
+  --primary-text: #7c8cff;
+  --primary-text-hover: #a6b1ff;
+  --primary-contrast: #08090b;
+  --primary-soft: rgba(124, 140, 255, 0.14);
+  --active-bg: rgba(124, 140, 255, 0.14);
+  --hover-bg: #151821;
+  --success: #7c8cff;
+  --success-soft: rgba(124, 140, 255, 0.14);
+  --danger: #ff7b8c;
+  --danger-soft: rgba(255, 123, 140, 0.14);
+  --warning: #d8b36a;
+  --warning-soft: rgba(216, 179, 106, 0.16);
+  --info: #7c8cff;
+  --info-soft: rgba(124, 140, 255, 0.1);
+  --glow-core: rgba(124, 140, 255, 0.5);
+  --glow-ring: rgba(124, 140, 255, 0.3);
+  --glow-ember: #7c8cff;
+  --shadow-soft: 0 24px 70px -30px rgba(0, 0, 0, 0.8);
+  --focus-ring: 0 0 0 3px rgba(124, 140, 255, 0.35);
+}
+
+[data-theme="light"] body.auth-page {
+  --bg: #f1eee8;
+  --bg-elevated: #f9f6f1;
+  --bg-inset: #e9e5dd;
+  --sidebar-bg: #ece8e0;
+  --text: #17181c;
+  --text-muted: #5f6570;
+  --border: rgba(23, 24, 28, 0.1);
+  --input-border: rgba(23, 24, 28, 0.22);
+  --primary: #4656d8;
+  --primary-hover: #5261e0;
+  --primary-text: #4656d8;
+  --primary-text-hover: #3947c8;
+  --primary-contrast: #ffffff;
+  --primary-soft: rgba(70, 86, 216, 0.13);
+  --active-bg: rgba(70, 86, 216, 0.14);
+  --hover-bg: #e7e2d9;
+  --success: #3f64b8;
+  --success-soft: rgba(63, 100, 184, 0.13);
+  --danger: #b23a46;
+  --danger-soft: rgba(178, 58, 70, 0.12);
+  --warning: #8c5d1f;
+  --warning-soft: rgba(140, 93, 31, 0.14);
+  --info: #4656d8;
+  --info-soft: rgba(70, 86, 216, 0.1);
+  --glow-core: rgba(70, 86, 216, 0.35);
+  --glow-ring: rgba(70, 86, 216, 0.22);
+  --glow-ember: #4656d8;
+  --shadow-soft: 0 24px 70px -34px rgba(30, 25, 60, 0.45);
+  --focus-ring: 0 0 0 3px rgba(70, 86, 216, 0.28);
+}
+
+/* ---- Ambient backdrop: subtle grid + soft blue/purple glow ---- */
+.auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: clip;
+}
+
+.auth-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: -60% 0;
+  opacity: 0.5;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 88px 88px;
+}
+
+.auth-backdrop::after {
+  content: "";
+  position: absolute;
+  top: -14vh;
+  left: 50%;
+  width: 130vmax;
+  height: 130vmax;
+  background: radial-gradient(closest-side, var(--primary-soft) 0%, transparent 72%);
+  opacity: 0.45;
+}
+
+/* ---- Public chrome on auth pages ---- */
+.auth-page .public-nav {
+  position: sticky;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom-color: var(--border);
+}
+
+.auth-page .public-nav-inner {
+  max-width: 1080px;
+}
+
+.auth-page .brand-name {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.auth-page .brand-mark {
+  border-radius: 10px;
+  box-shadow: 0 0 24px -6px var(--primary-soft);
+}
+
+.auth-page .theme-toggle {
+  background: color-mix(in srgb, var(--bg-inset) 55%, transparent);
+  border-color: var(--border);
+  border-radius: 12px;
+}
+
+.auth-page .button-ghost {
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-page .button-primary {
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 14px 34px -14px var(--primary-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.15s ease;
+}
+
+.auth-page .button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px -16px var(--primary-soft);
+}
+
+/* ---- Single centered glass panel ---- */
+.auth-page .public-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: none;
+  width: 100%;
+  padding: 48px 24px 64px;
+}
+
+.auth-page .public-footer {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.auth-page .flash-stack {
+  width: 100%;
+  max-width: 460px;
+}
+
+.auth-page .auth-wrap {
+  padding: 0;
+  width: 100%;
+}
+
+.auth-page .auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  padding: clamp(32px, 5vw, 48px);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+  box-shadow: var(--shadow-soft), 0 0 0 1px var(--primary-soft),
+    0 0 90px -24px var(--primary-soft);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  animation: auth-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-page .auth-title {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  margin-bottom: 10px;
+}
+
+.auth-page .auth-subtitle {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  margin-bottom: 32px;
+}
+
+.auth-page .field-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.auth-page .field-input {
+  padding: 13px 15px;
+  border-radius: 12px;
+  border: 1px solid var(--input-border);
+  background-color: var(--bg-inset);
+  color: var(--text);
+  font: inherit;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.auth-page .field-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+
+.auth-page .field-input:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring), 0 0 26px -10px var(--primary-soft);
+}
+
+.auth-page .field-hint {
+  color: var(--text-muted);
+  font-size: 0.825rem;
+}
+
+.auth-page .form {
+  gap: 22px;
+}
+
+.auth-page .button-block {
+  margin-top: 4px;
+}
+
+.auth-page .auth-alt {
+  color: var(--text-muted);
+}
+
+.auth-page .auth-alt a {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.auth-page .auth-alt a:hover {
+  color: var(--primary-text-hover);
+}
+
+@media (max-width: 560px) {
+  .auth-page .public-main {
+    padding: 36px 16px 48px;
+  }
+
+  .auth-page .auth-card {
+    padding: 28px 22px;
+    border-radius: 20px;
   }
 }

@@ -16,10 +16,11 @@
 
   function palette() {
     return {
-      text: cssVar("--text", "#1b2430"),
-      muted: cssVar("--text-muted", "#5b6b7c"),
-      grid: cssVar("--border", "#dfe4ea"),
-      accent: cssVar("--primary", "#4f46e5"),
+      text: cssVar("--text", "#f3ece4"),
+      muted: cssVar("--text-muted", "#a89b8e"),
+      grid: cssVar("--border", "#2b3438"),
+      accent: cssVar("--primary-text", "#cf9d7b"),
+      bars: cssVar("--chart-secondary", "#9a6744"),
     };
   }
 
@@ -37,6 +38,14 @@
     if (!window.Chart) {
       return; // vendored library failed to load — tables remain usable
     }
+    try {
+      renderCharts(data);
+    } catch (e) {
+      /* A malformed data payload must never break the page. */
+    }
+  }
+
+  function renderCharts(data) {
     trendChart = destroy(trendChart);
     skillsChart = destroy(skillsChart);
 
@@ -87,7 +96,7 @@
             {
               label: "Average score",
               data: data.skills.map(function (row) { return row.average; }),
-              backgroundColor: colors.accent,
+              backgroundColor: colors.bars,
               borderRadius: 4,
             },
           ],

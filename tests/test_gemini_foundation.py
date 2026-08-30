@@ -12,6 +12,24 @@ import os
 import tempfile
 import unittest
 from types import SimpleNamespace
+from unittest import mock
+
+import httpx
+
+from interview_Ai.app.ai.errors import (
+    GeminiAPIError,
+    GeminiConfigError,
+    GeminiMalformedResponseError,
+    GeminiRateLimitError,
+    GeminiSchemaError,
+    GeminiTimeoutError,
+)
+from interview_Ai.app.ai.gemini import (
+    DEFAULT_MODEL,
+    GeminiService,
+    _extract_text,
+    _sdk_transport,
+)
 
 from interview_Ai.app.ai.errors import (
     GeminiAPIError,
@@ -289,6 +307,37 @@ class ServiceCallTests(unittest.TestCase):
         with self.assertRaises(GeminiConfigError):
             service.generate("generate_question",
                              {"role": "SWE", "topic": "SQL", "difficulty": "medium"})
+
+
+class TransportErrorMappingTests(unittest.TestCase):
+    """httpx transport failures must map onto the typed Gemini errors."""
+
+    def _sdk_call(self, side_effect):
+        import google.genai as genai
+
+        client = mock.MagicMock()
+        client.models.generate_content.side_effect = side_effect
+        with mock.patch.object(genai, "Client", return_value=client):
+            transport = _sdk_transport(
+                api_key="test-secret-key", model=DEFAULT_MODEL
+            )
+        return transport
+
+    def test_connect_error_maps_to_gemini_api_error(self):
+        transport = self._sdk_call(
+            httpx.ConnectError("connection refused to Gemini")
+        )
+        with self.assertRaises(GeminiAPIError) as ctx:
+            transport(COACH_SYSTEM, "user prompt", 0.7, 1024)
+        self.assertEqual(ctx.exception.status_code, 0)
+        self.assertIn("Network error reaching Gemini", str(ctx.exception))
+
+    def test_timeout_still_maps_to_timeout_error(self):
+        transport = self._sdk_call(
+            httpx.ReadTimeout("request timed out")
+        )
+        with self.assertRaises(GeminiTimeoutError):
+            transport(COACH_SYSTEM, "user prompt", 0.7, 1024)
 
 
 if __name__ == "__main__":

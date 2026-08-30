@@ -57,6 +57,7 @@ def create_app(config_object=None):
     from .interview import interview_bp
     from .main import main_bp
     from .practice import practice_bp
+    from .profile import profile_bp
     from .reports import reports_bp
     from .replay import replay_bp
     from .resume import resume_bp
@@ -73,6 +74,7 @@ def create_app(config_object=None):
     app.register_blueprint(analytics_bp)
     app.register_blueprint(resume_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(profile_bp)
 
     # Load the authenticated user for every request.
     @app.before_request

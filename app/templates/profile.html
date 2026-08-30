@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Profile — InterviewIQ{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Your profile</h1>
+  <p class="page-subtitle">
+    Your target role steers the questions Smart Practice and Real Interview
+    generate for you.
+  </p>
+</header>
+
+<section class="card" aria-labelledby="profile-form-title">
+  <h2 class="card-title" id="profile-form-title">Personal info</h2>
+
+  <form method="post" action="{{ url_for('profile.view') }}" class="form">
+    {{ csrf_token() }}
+
+    <div class="field">
+      <label class="field-label" for="profile-name">Name</label>
+      <input class="field-input" type="text" id="profile-name" name="name"
+             value="{{ form.name }}" required minlength="2" maxlength="80">
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="profile-email">Email</label>
+      <input class="field-input" type="email" id="profile-email"
+             value="{{ email }}" readonly aria-readonly="true">
+      <p class="field-hint">Your login email can't be changed here.</p>
+    </div>
+
+    <hr class="soft-divider">
+
+    <h3 class="card-title">Interview targeting</h3>
+
+    <div class="field">
+      <label class="field-label" for="profile-role">Target role</label>
+      <input class="field-input" type="text" id="profile-role" name="role"
+             value="{{ form.role }}" maxlength="80"
+             placeholder="e.g. Backend Developer">
+      <p class="field-hint">
+        Sent to the AI coach when it builds your interview and practice
+        questions. Leave empty to use the default role.
+      </p>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="profile-skills">Skills (comma separated)</label>
+      <textarea class="field-input" id="profile-skills" name="skills"
+                rows="3" placeholder="e.g. Python, SQL, REST APIs">{{ form.skills }}</textarea>
+      <p class="field-hint">
+        Up to {{ max_skills }} skills, {{ skill_max_length }} characters each.
+        Duplicates are removed automatically.
+      </p>
+    </div>
+
+    <button type="submit" class="button button-primary button-block">Save profile</button>
+  </form>
+</section>
+
+{% if saved_skills %}
+<section class="card" aria-labelledby="saved-skills-title">
+  <h2 class="card-title" id="saved-skills-title">Saved skills</h2>
+  <div class="badge-cloud">
+    {% for skill in saved_skills %}<span class="badge">{{ skill }}</span>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="card" aria-labelledby="profile-resume-title">
+  <h2 class="card-title" id="profile-resume-title">Resume</h2>
+  {% if has_resume %}
+  <p class="stat-note">A resume is on file for resume-based practice.</p>
+  {% else %}
+  <p class="stat-note">No resume uploaded yet — resume-based questions need one.</p>
+  {% endif %}
+  <a class="button button-ghost button-small" href="{{ url_for('resume.view') }}">Open Resume Analysis</a>
+</section>
+{% endblock %}

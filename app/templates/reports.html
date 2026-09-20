@@ -1,59 +1,96 @@
 {% extends "base.html" %}
 {% block title %}Reports — InterviewIQ{% endblock %}
+{% block body_class %}page-reports{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
 
 {% block content %}
-<header class="page-header">
-  <h1 class="page-title">Reports</h1>
-  <p class="page-subtitle">
-    Download a PDF report for any completed session — scores, feedback and a
-    coach summary.
-  </p>
-</header>
+<div class="iq-page">
 
-{% if interviews %}
-<ul class="history-list">
-  {% for item in interviews %}
-  <li class="history-item">
-    <div class="history-item-main">
-      <span class="history-item-link is-static">
-        {{ item.role if item.mode == 'real' else item.type }}
-      </span>
-      <div class="question-meta">
-        <span class="badge badge-muted">{{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
-        {% if item.mode == 'real' %}
-        <span class="badge badge-muted">{{ type_labels.get(item.type, item.type) | capitalize }}</span>
-        {% endif %}
-        <span class="badge badge-muted">{{ item.date[:16] }}</span>
+  <header class="iq-topbar">
+    <div class="iq-topbar-copy">
+      <h1 class="iq-greeting">Reports</h1>
+      <p class="iq-topbar-sub">On-demand PDF reports for any completed session.</p>
+    </div>
+    <a class="iq-profile-shortcut" href="{{ url_for('settings.view') }}" aria-label="Your profile">
+      <span class="avatar iq-profile-avatar" aria-hidden="true">{{ user_initial }}</span>
+      <span class="iq-profile-shortcut-label">{{ user_name }}</span>
+    </a>
+  </header>
+
+  <section class="iq-hero iq-reveal" aria-labelledby="reports-hero-title">
+    <div class="iq-hero-ambient" aria-hidden="true"></div>
+    <div class="iq-hero-content">
+      <p class="iq-hero-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Downloadable reports</p>
+      <h1 class="iq-hero-title" id="reports-hero-title">Reports</h1>
+      <p class="iq-hero-sub">
+        Download a PDF report for any completed session — scores, feedback
+        and a coach summary, generated on demand.
+      </p>
+    </div>
+  </section>
+
+  {% if interviews %}
+  <section class="iq-panel iq-reveal" aria-labelledby="reports-list-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="reports-list-title">Completed sessions</h2>
+        <p class="iq-panel-sub">Pick a session to download its PDF report.</p>
       </div>
     </div>
-    <div class="history-item-score">
-      {% if item.overall_score is not none %}
-      <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
-        {{ item.overall_score | round(0) | int }}/100
-      </span>
-      {% else %}
-      <span class="badge badge-muted">Not graded</span>
-      {% endif %}
-      <a class="button button-small button-primary"
-         href="{{ url_for('reports.download', interview_id=item.id) }}">Download PDF</a>
+
+    <ul class="history-list">
+      {% for item in interviews %}
+      <li class="history-item">
+        <div class="history-item-main">
+          <span class="history-item-link is-static">
+            {{ item.role if item.mode == 'real' else item.type }}
+          </span>
+          <div class="question-meta">
+            <span class="badge badge-muted">{{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
+            {% if item.mode == 'real' %}
+            <span class="badge badge-muted">{{ type_labels.get(item.type, item.type) | capitalize }}</span>
+            {% endif %}
+            <span class="badge badge-muted">{{ item.date[:16] }}</span>
+          </div>
+        </div>
+        <div class="history-item-score">
+          {% if item.overall_score is not none %}
+          <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
+            {{ item.overall_score | round(0) | int }}/100
+          </span>
+          {% else %}
+          <span class="badge badge-muted">Not graded</span>
+          {% endif %}
+          <a class="button button-small button-primary iq-btn iq-btn-primary"
+             href="{{ url_for('reports.download', interview_id=item.id) }}">Download PDF</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="stat-note">Reports are generated on demand and aren't stored — bookmark this page instead of the download link.</p>
+  </section>
+  {% else %}
+  <section class="iq-panel iq-reveal">
+    <div class="empty-state">
+      <p class="empty-state-title">Nothing to report yet</p>
+      <p class="empty-state-text">
+        Reports are available once you complete a session. Finish a practice
+        question or a real interview first.
+      </p>
+      <div class="quick-actions">
+        <a class="button button-primary button-block iq-btn iq-btn-primary" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+        <a class="button button-block iq-btn iq-btn-ghost" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+      </div>
     </div>
-  </li>
-  {% endfor %}
-</ul>
-<p class="stat-note">Reports are generated on demand and aren't stored — bookmark this page instead of the download link.</p>
-{% else %}
-<div class="card">
-  <div class="empty-state">
-    <p class="empty-state-title">Nothing to report yet</p>
-    <p class="empty-state-text">
-      Reports are available once you complete a session. Finish a practice
-      question or a real interview first.
-    </p>
-    <div class="quick-actions">
-      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
-      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
-    </div>
-  </div>
+  </section>
+  {% endif %}
+
 </div>
-{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages.js') }}"></script>
 {% endblock %}

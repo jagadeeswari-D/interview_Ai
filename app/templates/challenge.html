@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Today's Challenge — InterviewIQ{% endblock %}
+{% block body_class %}page-challenge{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/challenge.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="ch-flow">
+
+  <!-- HERO -->
+  <section class="ch-hero iq-reveal" aria-labelledby="ch-hero-title">
+    <div class="ch-hero-ambient" aria-hidden="true"></div>
+    <div class="ch-hero-content">
+      <p class="ch-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> AI Interview Coach</p>
+      <h1 class="ch-hero-title" id="ch-hero-title">Today's Challenge</h1>
+      <p class="ch-hero-tagline">One question. One answer. Every day.</p>
+      <p class="ch-hero-sub">
+        {% if challenge.status == 'completed' %}
+        You've <strong>completed</strong> today's challenge — great momentum.
+        {% else %}
+        A fresh interview question curated for <strong>{{ challenge.challenge_date }}</strong>. Answer it to lock in the day.
+        {% endif %}
+      </p>
+      <span class="ch-status {{ 'is-done' if challenge.status == 'completed' else 'is-open' }}"
+            role="status" aria-live="polite">
+        {{ 'Completed' if challenge.status == 'completed' else 'Open' }}
+      </span>
+    </div>
+  </section>
+
+  <!-- CHALLENGE -->
+  <section class="ch-panel card iq-reveal" aria-labelledby="ch-question-heading">
+    <div class="ch-question-meta">
+      <span class="ch-badge ch-badge-accent">Challenge · {{ challenge.challenge_date }}</span>
+      {% if challenge.question_type %}<span class="ch-badge">{{ challenge.question_type | capitalize }}</span>{% endif %}
+    </div>
+
+    <h2 class="visually-hidden" id="ch-question-heading">Interview question</h2>
+    <p class="ch-question-text">{{ challenge.question }}</p>
+
+    {% if challenge.status == 'pending' %}
+
+    <details class="ch-hint">
+      <summary>
+        <span class="ch-hint-label">Need a hint?</span>
+        <span class="ch-hint-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="ch-hint-body">
+        <p class="ch-hint-lead">A strong answer would touch on:</p>
+        <ul class="ch-concept-list">
+          {% for concept in concepts %}
+          <li>{{ concept }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </details>
+
+    <form method="post" action="{{ url_for('challenge.answer') }}" class="ch-answer-form" data-submit-guard data-answer-form>
+      {{ csrf_token() }}
+      <input type="hidden" name="challenge_id" value="{{ challenge.id }}">
+      <div class="ch-field">
+        <div class="ch-label-row">
+          <label class="ch-label" for="answer">Your answer</label>
+          <span class="ch-char-count" data-char-count>0 / 5000</span>
+        </div>
+        <textarea class="ch-textarea" id="answer" name="answer" rows="8" required
+                  maxlength="5000" autofocus
+                  placeholder="Answer as you would in a real interview…"></textarea>
+        <p class="ch-hint-text">Your answer is saved once and stays completed for the day.</p>
+      </div>
+
+      <div class="ch-submit-row">
+        <button type="submit" class="ch-btn ch-btn-primary ch-btn-large" data-loading-label="Submitting…">
+          <span class="ch-btn-label">Submit answer</span>
+          <span class="ch-spinner" aria-hidden="true"></span>
+        </button>
+      </div>
+    </form>
+
+    {% else %}
+
+    <div class="ch-done" role="status" aria-live="polite">
+      <span class="ch-done-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </span>
+      <div class="ch-done-copy">
+        <p class="ch-done-title">Challenge completed</p>
+        <p class="ch-done-sub">Submitted on {{ challenge.completed_at[:16] }}. See you tomorrow for the next one.</p>
+      </div>
+    </div>
+
+    <div class="ch-answer-echo">
+      <p class="ch-answer-echo-label">Your answer</p>
+      <p class="ch-answer-echo-text">{{ challenge.answer }}</p>
+    </div>
+
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/challenge.js') }}"></script>
+{% endblock %}

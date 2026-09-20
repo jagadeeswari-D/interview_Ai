@@ -1,0 +1,630 @@
+{
+  "pages": {
+    "dashboard@1440": {
+      "url": "/dashboard",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "primary_btn": "rgba(0, 0, 0, 0)",
+      "skill_fill_high": "",
+      "dash_tooltip": {
+        "theme": "light",
+        "white_px": 72427,
+        "dark_px": 310,
+        "top_colors": [
+          "#e0e0e0",
+          "#c0e0e0",
+          "#c0c0c0",
+          "#000020",
+          "#808080"
+        ]
+      },
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\dashboard_1440_dark.png"
+    },
+    "dashboard@1024": {
+      "url": "/dashboard",
+      "theme": "light",
+      "width": 1024,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\dashboard_1024_light.png"
+    },
+    "dashboard@768": {
+      "url": "/dashboard",
+      "theme": "light",
+      "width": 768,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\dashboard_768_dark.png"
+    },
+    "dashboard@560": {
+      "url": "/dashboard",
+      "theme": "light",
+      "width": 560,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\dashboard_560_light.png"
+    },
+    "dashboard@360": {
+      "url": "/dashboard",
+      "theme": "light",
+      "width": 360,
+      "overflow": 39,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\dashboard_360_light.png"
+    },
+    "roadmap@1440": {
+      "url": "/roadmap",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "phases": 14,
+      "node_done_bg": "rgba(15, 122, 87, 0.12)",
+      "node_pending_bg": "rgb(228, 233, 241)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\roadmap_1440_dark.png"
+    },
+    "roadmap@1024": {
+      "url": "/roadmap",
+      "theme": "light",
+      "width": 1024,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "phases": 14,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\roadmap_1024_light.png"
+    },
+    "roadmap@768": {
+      "url": "/roadmap",
+      "theme": "light",
+      "width": 768,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "phases": 14,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\roadmap_768_dark.png"
+    },
+    "roadmap@560": {
+      "url": "/roadmap",
+      "theme": "light",
+      "width": 560,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "phases": 14,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\roadmap_560_light.png"
+    },
+    "roadmap@360": {
+      "url": "/roadmap",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "phases": 14,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\roadmap_360_light.png"
+    },
+    "practice@1440": {
+      "url": "/practice",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\practice_1440_dark.png"
+    },
+    "practice@1024": {
+      "url": "/practice",
+      "theme": "light",
+      "width": 1024,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\practice_1024_light.png"
+    },
+    "practice@768": {
+      "url": "/practice",
+      "theme": "light",
+      "width": 768,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\practice_768_dark.png"
+    },
+    "practice@560": {
+      "url": "/practice",
+      "theme": "light",
+      "width": 560,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\practice_560_light.png"
+    },
+    "practice@360": {
+      "url": "/practice",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\practice_360_light.png"
+    },
+    "interview@1440": {
+      "url": "/interview",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "mode_cards": 3,
+      "card_bg": "rgba(0, 0, 0, 0)",
+      "selected_state": {
+        "bg": "rgba(0, 0, 0, 0)",
+        "border": "rgb(70, 86, 216)"
+      },
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\interview_1440_dark.png"
+    },
+    "interview@1024": {
+      "url": "/interview",
+      "theme": "light",
+      "width": 1024,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "mode_cards": 3,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\interview_1024_light.png"
+    },
+    "interview@768": {
+      "url": "/interview",
+      "theme": "light",
+      "width": 768,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "mode_cards": 3,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\interview_768_dark.png"
+    },
+    "interview@560": {
+      "url": "/interview",
+      "theme": "light",
+      "width": 560,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "mode_cards": 3,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\interview_560_light.png"
+    },
+    "interview@360": {
+      "url": "/interview",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "mode_cards": 3,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\interview_360_light.png"
+    },
+    "analytics@1440": {
+      "url": "/analytics",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heatmap": {
+        "heat": {
+          "mid": [
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            },
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            },
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            },
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            },
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            },
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            },
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            },
+            {
+              "bg": "rgba(168, 106, 20, 0.14)",
+              "text": "rgb(22, 26, 35)",
+              "border": "rgb(168, 106, 20)"
+            }
+          ]
+        },
+        "pill": "rgba(168, 106, 20, 0.14)",
+        "legend": {
+          "high": "rgb(15, 122, 87)",
+          "mid": "rgb(168, 106, 20)",
+          "low": "rgb(192, 69, 78)"
+        }
+      },
+      "trend_tooltip": {
+        "theme": "light",
+        "white_px": 66171,
+        "dark_px": 0,
+        "top_colors": [
+          "#e0e0e0",
+          "#c0e0e0",
+          "#c0c0c0",
+          "#c0c0e0",
+          "#808080"
+        ]
+      },
+      "skills_tooltip": {
+        "theme": "light",
+        "white_px": 90059,
+        "dark_px": 0,
+        "top_colors": [
+          "#e0e0e0",
+          "#a06000",
+          "#c0e0e0",
+          "#c0c0e0",
+          "#c0a080"
+        ]
+      },
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\analytics_1440_dark.png"
+    },
+    "analytics@1024": {
+      "url": "/analytics",
+      "theme": "light",
+      "width": 1024,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\analytics_1024_light.png"
+    },
+    "analytics@768": {
+      "url": "/analytics",
+      "theme": "light",
+      "width": 768,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\analytics_768_dark.png"
+    },
+    "analytics@560": {
+      "url": "/analytics",
+      "theme": "light",
+      "width": 560,
+      "overflow": 80,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\analytics_560_light.png"
+    },
+    "analytics@360": {
+      "url": "/analytics",
+      "theme": "light",
+      "width": 360,
+      "overflow": 280,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\analytics_360_light.png"
+    },
+    "live-practice@1440": {
+      "url": "/interview/52",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "timer": null,
+      "question": false,
+      "answer_area": false,
+      "avatar": false,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\live-practice_1440_light.png"
+    },
+    "live-practice@360": {
+      "url": "/interview/52",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "timer": null,
+      "question": false,
+      "answer_area": false,
+      "avatar": false,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\live-practice_360_light.png"
+    },
+    "live-real@1440": {
+      "url": "/interview/53",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "timer": "357:38",
+      "question": false,
+      "answer_area": true,
+      "avatar": true,
+      "timer_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\live-real_1440_light.png"
+    },
+    "live-real@360": {
+      "url": "/interview/53",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "timer": "357:37",
+      "question": false,
+      "answer_area": true,
+      "avatar": true,
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\live-real_360_light.png"
+    },
+    "history@1440": {
+      "url": "/history",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\history_1440_light.png"
+    },
+    "history@360": {
+      "url": "/history",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\history_360_light.png"
+    },
+    "replay@1440": {
+      "url": "/replay/4",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(58, 73, 200)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\replay_1440_light.png"
+    },
+    "replay@360": {
+      "url": "/replay/4",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(58, 73, 200)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\replay_360_light.png"
+    },
+    "resume@1440": {
+      "url": "/resume",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\resume_1440_light.png"
+    },
+    "resume@360": {
+      "url": "/resume",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\resume_360_light.png"
+    },
+    "reports@1440": {
+      "url": "/reports",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\reports_1440_light.png"
+    },
+    "reports@360": {
+      "url": "/reports",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\reports_360_light.png"
+    },
+    "profile@1440": {
+      "url": "/profile",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\profile_1440_light.png"
+    },
+    "profile@360": {
+      "url": "/profile",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\profile_360_light.png"
+    },
+    "settings@1440": {
+      "url": "/settings",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\settings_1440_light.png"
+    },
+    "settings@360": {
+      "url": "/settings",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(22, 26, 35)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\settings_360_light.png"
+    },
+    "error-404@1440": {
+      "url": "/definitely-not-a-real-route",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(58, 73, 200)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\error-404_1440_light.png"
+    },
+    "error-404@360": {
+      "url": "/definitely-not-a-real-route",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "text": "rgb(22, 26, 35)",
+      "heading_color": "rgb(58, 73, 200)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\error-404_360_light.png"
+    },
+    "auth-login@light@1440": {
+      "url": "/login",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_login_light_1440.png"
+    },
+    "auth-register@light@1440": {
+      "url": "/register",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_register_light_1440.png"
+    },
+    "auth-error@light@1440": {
+      "url": "/nope",
+      "theme": "light",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_error_light_1440.png"
+    },
+    "auth-login@light@360": {
+      "url": "/login",
+      "theme": "light",
+      "width": 360,
+      "overflow": 4,
+      "bg": "rgb(238, 241, 246)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_login_light_360.png"
+    },
+    "auth-register@light@360": {
+      "url": "/register",
+      "theme": "light",
+      "width": 360,
+      "overflow": 4,
+      "bg": "rgb(238, 241, 246)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_register_light_360.png"
+    },
+    "auth-error@light@360": {
+      "url": "/nope",
+      "theme": "light",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(238, 241, 246)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_error_light_360.png"
+    },
+    "auth-login@dark@1440": {
+      "url": "/login",
+      "theme": "dark",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(8, 9, 11)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_login_dark_1440.png"
+    },
+    "auth-register@dark@1440": {
+      "url": "/register",
+      "theme": "dark",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(8, 9, 11)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_register_dark_1440.png"
+    },
+    "auth-error@dark@1440": {
+      "url": "/nope",
+      "theme": "dark",
+      "width": 1440,
+      "overflow": 0,
+      "bg": "rgb(8, 9, 11)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_error_dark_1440.png"
+    },
+    "auth-login@dark@360": {
+      "url": "/login",
+      "theme": "dark",
+      "width": 360,
+      "overflow": 4,
+      "bg": "rgb(8, 9, 11)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_login_dark_360.png"
+    },
+    "auth-register@dark@360": {
+      "url": "/register",
+      "theme": "dark",
+      "width": 360,
+      "overflow": 4,
+      "bg": "rgb(8, 9, 11)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_register_dark_360.png"
+    },
+    "auth-error@dark@360": {
+      "url": "/nope",
+      "theme": "dark",
+      "width": 360,
+      "overflow": 0,
+      "bg": "rgb(8, 9, 11)",
+      "screenshot": "C:\\Users\\sarath\\Desktop\\interview_Ai\\interview_Ai\\qa\\screenshots\\auth_error_dark_360.png"
+    }
+  },
+  "issues": [],
+  "fixes_considered": true
+}

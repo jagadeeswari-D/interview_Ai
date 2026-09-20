@@ -83,6 +83,24 @@ def parse_skills(skills_text):
     return skills, None
 
 
+def password_strength_error(password):
+    """Return an error message when a password is too weak, else None.
+
+    The single source of truth for the strength rule (minimum length plus
+    at least one letter and one number), used by registration and by the
+    Settings → change-password flow so a user can never downgrade to a
+    weaker password than registration would allow.
+    """
+    password = password or ""
+    if not password:
+        return "Password is required."
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return f"Password must be at least {MIN_PASSWORD_LENGTH} characters."
+    if not re.search(r"[A-Za-z]", password) or not re.search(r"\d", password):
+        return "Password must contain at least one letter and one number."
+    return None
+
+
 def validate_registration(name, email, password, confirm):
     """Return a list of (field, message) errors for a registration form."""
     errors = []
@@ -100,17 +118,9 @@ def validate_registration(name, email, password, confirm):
     elif not EMAIL_RE.match(normalize_email(email)):
         errors.append(("email", "Enter a valid email address."))
 
-    if not password:
-        errors.append(("password", "Password is required."))
-    elif len(password) < MIN_PASSWORD_LENGTH:
-        errors.append(
-            (
-                "password",
-                f"Password must be at least {MIN_PASSWORD_LENGTH} characters.",
-            )
-        )
-    elif not re.search(r"[A-Za-z]", password) or not re.search(r"\d", password):
-        errors.append(("password", "Password must contain at least one letter and one number."))
+    strength_error = password_strength_error(password)
+    if strength_error:
+        errors.append(("password", strength_error))
 
     if confirm is None or password != confirm:
         errors.append(("confirm", "Passwords do not match."))

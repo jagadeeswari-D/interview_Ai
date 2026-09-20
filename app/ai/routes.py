@@ -2,12 +2,14 @@
 
 GET /ai/health performs one minimal Gemini round-trip so operators can
 confirm the configured key and model work end-to-end. It requires login
-(each check consumes quota) and never echoes the API key anywhere.
+and is rate limited like every other Gemini-triggering route (each check
+consumes quota) and never echoes the API key anywhere.
 """
 
 from flask import Blueprint, current_app, jsonify
 
 from ..auth import login_required
+from ..ratelimit import check_gemini_limit
 from .errors import GeminiConfigError, GeminiError, GeminiRateLimitError
 
 ai_bp = Blueprint("ai", __name__)
@@ -17,6 +19,7 @@ ai_bp = Blueprint("ai", __name__)
 @login_required
 def gemini_health():
     """Verify the Gemini client can complete a simple API request."""
+    check_gemini_limit()
     service = current_app.extensions["gemini"]
     if not service.available:
         return jsonify(

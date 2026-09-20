@@ -63,8 +63,14 @@ def overall_score(scores):
     return mean_score(list(scores.values()))
 
 
-def evaluate_answer(service, question_text, answer_text, expected_concepts):
+def evaluate_answer(service, question_text, answer_text, expected_concepts,
+                    company=None):
     """Evaluate one answer through the shared Gemini contract.
+
+    `company` is the allowlisted company context dict (from
+    `company_context_for`) or None — it only ever contains static preset
+    fields, never browser-submitted text, and its absence keeps the prompt
+    byte-for-byte identical to the General / No Company baseline.
 
     Returns the validated payload with normalized scores added. Raises
     GeminiConfigError / GeminiRateLimitError / GeminiError on failure.
@@ -73,13 +79,16 @@ def evaluate_answer(service, question_text, answer_text, expected_concepts):
     # from this budget before emitting the visible JSON, so the shared 1024
     # default truncates the evaluation payload mid-string. 4096 leaves room
     # for thoughts + the full contract (scores/feedback/missing/model answer).
+    inputs = {
+        "question": question_text,
+        "answer": answer_text,
+        "expected_concepts": list(expected_concepts or []),
+    }
+    if company:
+        inputs["company"] = company
     payload = service.generate(
         "evaluate_answer",
-        {
-            "question": question_text,
-            "answer": answer_text,
-            "expected_concepts": list(expected_concepts or []),
-        },
+        inputs,
         max_output_tokens=4096,
     )
     payload["scores"] = normalize_scores(payload["scores"])
@@ -93,12 +102,13 @@ def store_evaluation(question_id, user_answer, evaluation,
     `skill_label` is the Performance skill context: the practice topic in
     Smart Practice Mode, the capitalized interview type in Real Interview
     Mode (same convention the routes already used). Returns
-    `(overall_score, technical_accuracy)` so Real Mode can drive adaptive
-    depth without re-reading the row.
+    `(inserted, overall_score, technical_accuracy)` so callers can skip
+    downstream work when a duplicate submission means another request
+    already stored this answer (and already wrote the Performance row).
     """
     scores = evaluation["scores"]
     overall = overall_score(scores)
-    save_answer(
+    inserted = save_answer(
         question_id,
         user_answer,
         overall,
@@ -107,5 +117,6 @@ def store_evaluation(question_id, user_answer, evaluation,
         evaluation["missing_points"],
         evaluation["model_answer"],
     )
-    add_performance(user_id, skill_label, overall, interview_id)
-    return overall, scores.get("technical_accuracy")
+    if inserted:
+        add_performance(user_id, skill_label, overall, interview_id)
+    return inserted, overall, scores.get("technical_accuracy")

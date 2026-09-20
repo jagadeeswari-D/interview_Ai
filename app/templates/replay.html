@@ -1,151 +1,296 @@
 {% extends "base.html" %}
 {% block title %}Interview Replay — InterviewIQ{% endblock %}
+{% block body_class %}page-replay{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bookmarks.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/notes.css') }}">
+{% endblock %}
 
 {% block content %}
+<div class="iq-page">
 
-{% if view == 'index' %}
-<header class="page-header">
-  <h1 class="page-title">Interview Replay</h1>
-  <p class="page-subtitle">
-    Walk through any completed session question by question — your answer,
-    the coach's feedback, missing points and the model answer.
-  </p>
-</header>
+  <header class="iq-topbar">
+    <div class="iq-topbar-copy">
+      <h1 class="iq-greeting">
+        {% if view == 'walkthrough' %}Replay{% else %}Interview Replay{% endif %}
+      </h1>
+      <p class="iq-topbar-sub">
+        {% if view == 'walkthrough' %}
+        {{ type_label }} · {{ interview.role }}
+        {% if interview.mode == 'real' %} · {{ interview.difficulty | capitalize }}{% endif %}
+        · {{ interview.date[:16] }}
+        {% else %}
+        Walk through any completed session, question by question.
+        {% endif %}
+      </p>
+    </div>
+    <a class="iq-profile-shortcut" href="{{ url_for('settings.view') }}" aria-label="Your profile">
+      <span class="avatar iq-profile-avatar" aria-hidden="true">{{ user_initial }}</span>
+      <span class="iq-profile-shortcut-label">{{ user_name }}</span>
+    </a>
+  </header>
 
-<section class="card">
-  {% if interviews %}
-  <ul class="history-list">
-    {% for item in interviews %}
-    <li class="history-item">
-      <div class="history-item-main">
-        <span class="history-item-link">
-          {{ item.role if item.mode == 'real' else item.type }}
-        </span>
-        <div class="question-meta">
-          <span class="badge badge-muted">
-            {{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
-          {% if item.mode == 'real' %}
-          <span class="badge badge-muted">{{ type_label(item) | capitalize }}</span>
+  {% if view == 'index' %}
+  <section class="iq-hero iq-reveal" aria-labelledby="replay-hero-title">
+    <div class="iq-hero-ambient" aria-hidden="true"></div>
+    <div class="iq-hero-content">
+      <p class="iq-hero-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Session archive</p>
+      <h1 class="iq-hero-title" id="replay-hero-title">Interview Replay</h1>
+      <p class="iq-hero-sub">
+        Step back into any finished session — your answer, the coach's
+        feedback, the missing points and the model answer, replayed one
+        question at a time.
+      </p>
+    </div>
+  </section>
+
+  <section class="iq-panel iq-reveal" aria-labelledby="replays-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="replays-title">Completed sessions</h2>
+        <p class="iq-panel-sub">Pick a session to walk through it question by question.</p>
+      </div>
+    </div>
+
+    {% if interviews %}
+    <ul class="history-list">
+      {% for item in interviews %}
+      <li class="history-item">
+        <div class="history-item-main">
+          <span class="history-item-link">
+            {{ item.role if item.mode == 'real' else item.type }}
+          </span>
+          <div class="question-meta">
+            <span class="badge badge-muted">
+              {{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
+            {% if item.mode == 'real' %}
+            <span class="badge badge-muted">{{ type_label(item) | capitalize }}</span>
+            {% endif %}
+            <span class="badge badge-muted">{{ item.date[:16] }}</span>
+          </div>
+        </div>
+        <div class="history-item-score">
+          {% if item.overall_score is not none %}
+          <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
+            {{ item.overall_score | round(0) | int }}/100
+          </span>
           {% endif %}
-          <span class="badge badge-muted">{{ item.date[:16] }}</span>
+          <a class="button button-primary iq-btn iq-btn-primary"
+             href="{{ url_for('replay.walkthrough', interview_id=item.id) }}">Open replay</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+      <p class="empty-state-title">Nothing to replay yet</p>
+      <p class="empty-state-text">
+        Finish a practice question or a full interview and it will appear here
+        as a step-by-step replay.
+      </p>
+      <div class="quick-actions">
+        <a class="button button-primary button-block iq-btn iq-btn-primary" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+        <a class="button button-block iq-btn iq-btn-ghost" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  {% if saved %}
+  <section class="iq-panel iq-reveal" id="saved" aria-labelledby="saved-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="saved-title">Saved questions</h2>
+        <p class="iq-panel-sub">Questions you bookmarked during replay — open one to revisit it.</p>
+      </div>
+    </div>
+
+    <ul class="history-list">
+      {% for row in saved %}
+      <li class="history-item">
+        <div class="history-item-main">
+          <a class="history-item-link"
+             href="{{ url_for('replay.walkthrough', interview_id=row.interview_id, q=row.sequence_order) }}">
+            {{ row.question[:140] }}{{ '…' if row.question|length > 140 }}</a>
+          <div class="question-meta">
+            <span class="badge badge-muted">
+              {{ 'Real interview' if row.mode == 'real' else 'Practice' }}</span>
+            <span class="badge badge-muted">
+              {{ row.role if row.mode == 'real' else row.type }}</span>
+            <span class="badge badge-muted">{{ row.date[:16] }}</span>
+          </div>
+        </div>
+        <div class="history-item-score">
+          <a class="button button-ghost button-small iq-btn iq-btn-ghost"
+             href="{{ url_for('replay.walkthrough', interview_id=row.interview_id, q=row.sequence_order) }}">Open replay</a>
+          <form method="post" class="bookmark-form"
+                action="{{ url_for('replay.bookmark_toggle', interview_id=row.interview_id) }}">
+            {{ csrf_token() }}
+            <input type="hidden" name="question_id" value="{{ row.question_id }}">
+            <input type="hidden" name="back" value="saved">
+            <button type="submit" class="bookmark-toggle is-bookmarked bookmark-toggle-remove"
+                    aria-label="Remove bookmark for this question">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 3h12a1 1 0 0 1 1 1v18l-7-4.5L5 22V4a1 1 0 0 1 1-1z"></path>
+              </svg>
+              <span>Remove bookmark</span>
+            </button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  {% if view == 'walkthrough' %}
+  <nav class="iq-panel replay-nav iq-reveal" aria-label="Question navigation">
+    <div class="replay-nav-buttons">
+      {% if prev_position %}
+      <a class="button button-ghost button-small iq-btn iq-btn-ghost"
+         href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=prev_position) }}"
+         rel="prev">&larr; Previous</a>
+      {% else %}<span></span>{% endif %}
+
+      <span class="replay-position">Question {{ position }} of {{ total }}</span>
+
+      {% if next_position %}
+      <a class="button button-ghost button-small iq-btn iq-btn-ghost"
+         href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=next_position) }}"
+         rel="next">Next &rarr;</a>
+      {% else %}<span></span>{% endif %}
+    </div>
+    <div class="question-meta replay-jump" aria-label="Jump to a question">
+      {% for row in transcript %}
+      <a class="badge replay-jump-link {{ 'is-current' if loop.index == position }}"
+         href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=loop.index) }}"
+         aria-label="Go to question {{ loop.index }}">Q{{ loop.index }}</a>
+      {% endfor %}
+    </div>
+  </nav>
+
+  <section class="iq-panel interview-review-card iq-reveal" aria-live="polite">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title">Question {{ position }} of {{ total }}</h2>
+        <div class="question-meta iq-panel-sub-question-meta">
+          <span class="badge">Q{{ position }}</span>
+          {% if current.question_type %}
+          <span class="badge badge-muted">{{ current.question_type | capitalize }}</span>
+          {% endif %}
+          {% if current.score is not none %}
+          <span class="badge interview-score-badge
+                       {{ 'is-high' if current.score >= 75 else ('is-mid' if current.score >= 50 else 'is-low') }}">
+            {{ current.score | round(0) | int }}/100
+          </span>
+          {% else %}
+          <span class="badge badge-muted">Not answered</span>
+          {% endif %}
         </div>
       </div>
-      <div class="history-item-score">
-        {% if item.overall_score is not none %}
-        <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
-          {{ item.overall_score | round(0) | int }}/100
+      <form method="post" class="bookmark-form"
+            action="{{ url_for('replay.bookmark_toggle', interview_id=interview.id) }}">
+        {{ csrf_token() }}
+        <input type="hidden" name="question_id" value="{{ current.question_id }}">
+        <input type="hidden" name="q" value="{{ position }}">
+        <button type="submit" class="bookmark-toggle{{ ' is-bookmarked' if current.question_id in bookmarked }}"
+                aria-pressed="{{ 'true' if current.question_id in bookmarked else 'false' }}"
+                aria-label="{{ 'Remove bookmark for this question' if current.question_id in bookmarked else 'Bookmark this question' }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 3h12a1 1 0 0 1 1 1v18l-7-4.5L5 22V4a1 1 0 0 1 1-1z"></path>
+          </svg>
+          <span>{{ 'Saved' if current.question_id in bookmarked else 'Bookmark' }}</span>
+        </button>
+      </form>
+    </div>
+
+    <p class="ai-text question-text">{{ current.question }}</p>
+
+    <section class="personal-note" aria-labelledby="personal-note-title">
+      <div class="personal-note-head">
+        <h3 class="personal-note-title" id="personal-note-title">Personal note</h3>
+        <span class="personal-note-privacy" title="Only you can see this note">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3a5 5 0 0 1 5 5v3h1.5A1.5 1.5 0 0 1 20 12.5v8A1.5 1.5 0 0 1 18.5 22h-13A1.5 1.5 0 0 1 4 20.5v-8A1.5 1.5 0 0 1 5.5 11H7V8a5 5 0 0 1 5-5zm-2.5 8h5V8a2.5 2.5 0 0 0-5 0v3z"></path>
+          </svg>
+          Private
         </span>
-        {% endif %}
-        <a class="button button-small button-primary"
-           href="{{ url_for('replay.walkthrough', interview_id=item.id) }}">Open replay</a>
       </div>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <div class="empty-state">
-    <p class="empty-state-title">Nothing to replay yet</p>
-    <p class="empty-state-text">
-      Finish a practice question or a full interview and it will appear here
-      as a step-by-step replay.
-    </p>
-    <div class="quick-actions">
-      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
-      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
-    </div>
-  </div>
-  {% endif %}
-</section>
-{% endif %}
+      <form method="post" class="personal-note-form"
+            action="{{ url_for('replay.note_save', interview_id=interview.id) }}">
+        {{ csrf_token() }}
+        <input type="hidden" name="question_id" value="{{ current.question_id }}">
+        <input type="hidden" name="q" value="{{ position }}">
+        <label for="note-content" class="visually-hidden">
+          Personal note for this question</label>
+        <textarea id="note-content" name="content" class="personal-note-input" rows="3"
+                  maxlength="{{ note_max_length }}"
+                  data-saved="{{ note_content or '' }}"
+                  placeholder="A private reminder for this question — only you can see it."
+                  aria-describedby="personal-note-state personal-note-hint">{{ note_content or '' }}</textarea>
+        <div class="personal-note-foot">
+          <span class="personal-note-state" id="personal-note-state" role="status"
+                data-state-empty="No note yet" data-state-saved="Saved"
+                data-state-unsaved="Unsaved">
+            {{ 'Saved' if note_content else 'No note yet' }}
+          </span>
+          <span class="personal-note-hint" id="personal-note-hint">
+            A private reminder kept on this question. Limit {{ note_max_length }} characters.
+          </span>
+          <div class="personal-note-actions">
+            <button type="submit" name="action" value="save"
+                    class="button button-primary button-small iq-btn iq-btn-primary">Save note</button>
+            <button type="submit" name="action" value="clear"
+                    class="button button-ghost button-small iq-btn iq-btn-ghost">Clear</button>
+          </div>
+        </div>
+      </form>
+    </section>
 
-{% if view == 'walkthrough' %}
-<header class="page-header">
-  <h1 class="page-title">Interview Replay</h1>
-  <p class="page-subtitle">
-    {{ type_label }} · {{ interview.role }}
-    {% if interview.mode == 'real' %} · {{ interview.difficulty | capitalize }}{% endif %}
-    · {{ interview.date[:16] }}
-  </p>
-</header>
+    {% if current.user_answer is not none %}
+    <h3 class="sub-heading">Your answer</h3>
+    <p class="user-answer-text">{{ current.user_answer }}</p>
 
-<nav class="card replay-nav" aria-label="Question navigation">
-  <div class="replay-nav-buttons">
-    {% if prev_position %}
-    <a class="button button-ghost button-small"
-       href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=prev_position) }}"
-       rel="prev">&larr; Previous</a>
-    {% else %}<span></span>{% endif %}
+    <h3 class="sub-heading">Coach feedback</h3>
+    <p class="ai-text">{{ current.feedback }}</p>
 
-    <span class="replay-position">Question {{ position }} of {{ total }}</span>
-
-    {% if next_position %}
-    <a class="button button-ghost button-small"
-       href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=next_position) }}"
-       rel="next">Next &rarr;</a>
-    {% else %}<span></span>{% endif %}
-  </div>
-  <div class="question-meta replay-jump" aria-label="Jump to a question">
-    {% for row in transcript %}
-    <a class="badge replay-jump-link {{ 'is-current' if loop.index == position }}"
-       href="{{ url_for('replay.walkthrough', interview_id=interview.id, q=loop.index) }}"
-       aria-label="Go to question {{ loop.index }}">Q{{ loop.index }}</a>
-    {% endfor %}
-  </div>
-</nav>
-
-<section class="card interview-review-card" aria-live="polite">
-  <div class="question-meta">
-    <span class="badge">Q{{ position }}</span>
-    {% if current.question_type %}
-    <span class="badge badge-muted">{{ current.question_type | capitalize }}</span>
+    {% if current.missing_points %}
+    <h3 class="sub-heading">Missing points</h3>
+    <ul class="missing-list">
+      {% for point in current.missing_points %}
+      <li>{{ point }}</li>
+      {% endfor %}
+    </ul>
     {% endif %}
-    {% if current.score is not none %}
-    <span class="badge interview-score-badge
-                 {{ 'is-high' if current.score >= 75 else ('is-mid' if current.score >= 50 else 'is-low') }}">
-      {{ current.score | round(0) | int }}/100
-    </span>
+
+    <h3 class="sub-heading">Model answer</h3>
+    <details class="reveal" {% if position == total %}open{% endif %}>
+      <summary>Show model answer</summary>
+      <div class="reveal-body">
+        <p class="ai-text">{{ current.model_answer }}</p>
+      </div>
+    </details>
     {% else %}
-    <span class="badge badge-muted">Not answered</span>
+    <p class="stat-note">This question was never answered, so it was skipped
+       in grading.</p>
     {% endif %}
-  </div>
+  </section>
 
-  <p class="ai-text question-text">{{ current.question }}</p>
-
-  {% if current.user_answer is not none %}
-  <h3 class="sub-heading">Your answer</h3>
-  <p class="user-answer-text">{{ current.user_answer }}</p>
-
-  <h3 class="sub-heading">Coach feedback</h3>
-  <p class="ai-text">{{ current.feedback }}</p>
-
-  {% if current.missing_points %}
-  <h3 class="sub-heading">Missing points</h3>
-  <ul class="missing-list">
-    {% for point in current.missing_points %}
-    <li>{{ point }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  <h3 class="sub-heading">Model answer</h3>
-  <details class="reveal" {% if position == total %}open{% endif %}>
-    <summary>Show model answer</summary>
-    <div class="reveal-body">
-      <p class="ai-text">{{ current.model_answer }}</p>
+  <section class="iq-panel iq-reveal">
+    <div class="quick-actions">
+      <a class="button button-block iq-btn iq-btn-ghost" href="{{ url_for('replay.index') }}">Back to replays</a>
+      <a class="button button-block iq-btn iq-btn-primary" href="{{ url_for('history.detail', interview_id=interview.id) }}">Full session report</a>
     </div>
-  </details>
-  {% else %}
-  <p class="stat-note">This question was never answered, so it was skipped
-     in grading.</p>
+  </section>
   {% endif %}
-</section>
 
-<section class="card">
-  <div class="quick-actions">
-    <a class="button button-block" href="{{ url_for('replay.index') }}">Back to replays</a>
-    <a class="button button-block" href="{{ url_for('history.detail', interview_id=interview.id) }}">Full session report</a>
-  </div>
-</section>
-{% endif %}
+</div>
+{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notes.js') }}"></script>
 {% endblock %}

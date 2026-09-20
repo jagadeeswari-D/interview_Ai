@@ -1,112 +1,185 @@
 {% extends "base.html" %}
 {% block title %}Performance Analytics — InterviewIQ{% endblock %}
+{% block body_class %}page-analytics{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
 
 {% block content %}
-<header class="page-header">
-  <h1 class="page-title">Performance Analytics</h1>
-  <p class="page-subtitle">Trends, skill strengths and a transparent readiness estimate.</p>
-</header>
+<div class="iq-page">
 
-<section class="card readiness-card" aria-labelledby="readiness-title">
-  <h2 class="card-title" id="readiness-title">Placement readiness score</h2>
-  <p class="stat-note">
-    A self-assessment indicator computed from your own results — it is never
-    an AI judgement and it is recalculated every time you finish a session.
-  </p>
-  {% if readiness and readiness.score is not none %}
-  <div class="readiness-summary">
-    <span class="stat-value stat-value-large">{{ readiness.score | round(0) | int }}<span class="stat-unit">/100</span></span>
-    <span class="badge badge-muted">{{ readiness.label }}</span>
-  </div>
-  <table class="readiness-table">
-    <thead>
-      <tr>
-        <th scope="col">Signal</th>
-        <th scope="col">Value</th>
-        <th scope="col">Weight</th>
-        <th scope="col">Contribution</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for component in readiness.components %}
-      <tr>
-        <td>{{ component.label }}</td>
-        <td>
-          {% if component.available %}{{ component.value | round(0) | int }}/100
-          {% else %}<span class="badge badge-muted">no data yet</span>{% endif %}
-        </td>
-        <td>{{ '—' if not component.available else component.weight ~ '%' }}</td>
-        <td>
-          {% if component.available and readiness.signals_weight_total %}
-          {{ (component.weight / readiness.signals_weight_total * 100) | round(0) | int }}% of score
-          {% else %}—{% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <p class="stat-note">
-    Formula: weighted mean of the signals above (weights renormalized over the
-    {{ readiness.signals_used }} signals that have data). Skill mastery = mean
-    per-skill answer average · Interview results = mean overall session score ·
-    Weakness control = 100 − 100 × min(distinct weak skills / 6, 1) · Practice
-    experience = 100 × min(completed sessions / 10, 1).
-  </p>
-  {% else %}
-  <div class="empty-state">
-    <p class="empty-state-title">Not enough data yet</p>
-    <p class="empty-state-text">
-      Finish at least one practice question or interview — your readiness
-      estimate appears here with its full breakdown.
+  <header class="iq-topbar">
+    <div class="iq-topbar-copy">
+      <h1 class="iq-greeting">Performance Analytics</h1>
+      <p class="iq-topbar-sub">Trends, skill strengths and a transparent readiness estimate.</p>
+    </div>
+    <a class="iq-profile-shortcut" href="{{ url_for('settings.view') }}" aria-label="Your profile">
+      <span class="avatar iq-profile-avatar" aria-hidden="true">{{ user_initial }}</span>
+      <span class="iq-profile-shortcut-label">{{ user_name }}</span>
+    </a>
+  </header>
+
+  <section class="iq-hero iq-reveal" aria-labelledby="analytics-hero-title">
+    <div class="iq-hero-ambient" aria-hidden="true"></div>
+    <div class="iq-hero-content">
+      <p class="iq-hero-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Your progress, quantified</p>
+      <h1 class="iq-hero-title" id="analytics-hero-title">Performance Analytics</h1>
+      <p class="iq-hero-sub">
+        A transparent, self-assessment readiness estimate, your score trend
+        and a per-skill heatmap — recalculated after every finished session.
+      </p>
+    </div>
+  </section>
+
+  <section class="iq-panel iq-reveal" aria-labelledby="readiness-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="readiness-title">Placement readiness score</h2>
+        <p class="iq-panel-sub">
+          A self-assessment indicator computed from your own results — it is
+          never an AI judgement and it is recalculated every time you finish
+          a session.
+        </p>
+      </div>
+    </div>
+
+    {% if readiness and readiness.score is not none %}
+    <div class="iq-readiness">
+      <div class="iq-ring" data-score="{{ readiness.score }}" role="img"
+           aria-label="Readiness score {{ readiness.score | round(0) | int }} out of 100">
+        <span class="stat-value">{{ readiness.score | round(0) | int }}<span class="score-denominator">/100</span></span>
+      </div>
+      <div class="iq-readiness-copy">
+        <span class="iq-readiness-cap">{{ readiness.label }}</span>
+        <span class="iq-tone-pill is-{{ 'high' if readiness.score >= 75 else ('mid' if readiness.score >= 50 else 'low') }}" aria-hidden="true">
+          {{- 'On track' if readiness.score >= 75 else ('Progressing' if readiness.score >= 50 else 'Needs work') -}}
+        </span>
+        <span class="stat-note">Weighted mean of the signals below.</span>
+      </div>
+    </div>
+
+    <div class="readiness-table-wrap">
+    <table class="readiness-table">
+      <thead>
+        <tr>
+          <th scope="col">Signal</th>
+          <th scope="col">Value</th>
+          <th scope="col">Weight</th>
+          <th scope="col">Contribution</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for component in readiness.components %}
+        <tr>
+          <td>{{ component.label }}</td>
+          <td>
+            {% if component.available %}{{ component.value | round(0) | int }}/100
+            {% else %}<span class="badge badge-muted">no data yet</span>{% endif %}
+          </td>
+          <td>{{ '—' if not component.available else component.weight ~ '%' }}</td>
+          <td>
+            {% if component.available and readiness.signals_weight_total %}
+            {{ (component.weight / readiness.signals_weight_total * 100) | round(0) | int }}% of score
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="stat-note">
+      Formula: weighted mean of the signals above (weights renormalized over the
+      {{ readiness.signals_used }} signals that have data). Skill mastery = mean
+      per-skill answer average · Interview results = mean overall session score ·
+      Weakness control = 100 − 100 × min(distinct weak skills / 6, 1) · Practice
+      experience = 100 × min(completed sessions / 10, 1).
     </p>
-    <div class="quick-actions">
-      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+    {% else %}
+    <div class="empty-state">
+      <p class="empty-state-title">Not enough data yet</p>
+      <p class="empty-state-text">
+        Finish at least one practice question or interview — your readiness
+        estimate appears here with its full breakdown.
+      </p>
+      <div class="quick-actions">
+        <a class="button button-primary button-block iq-btn iq-btn-primary" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+      </div>
     </div>
-  </div>
-  {% endif %}
-</section>
+    {% endif %}
+  </section>
 
-<section class="card" aria-labelledby="trend-title">
-  <h2 class="card-title" id="trend-title">Overall score trend</h2>
-  {% if trend %}
-  <div class="chart-wrap">
-    <canvas id="trend-chart" role="img"
-            aria-label="Line chart of overall scores across your completed sessions"></canvas>
-  </div>
-  <noscript><p class="empty-state-text">Enable JavaScript to see charts — or use the numbers below.</p></noscript>
-  <ul class="trend-list">
-    {% for date, score in trend %}<li>{{ date }}: {{ score | round(0) | int }}/100</li>{% endfor %}
-  </ul>
-  {% else %}
-  <div class="empty-state">
-    <p class="empty-state-text">Complete a session and your score history will chart here.</p>
-  </div>
-  {% endif %}
-</section>
-
-<section class="card" aria-labelledby="heatmap-title">
-  <h2 class="card-title" id="heatmap-title">Skill heatmap</h2>
-  {% if skill_rows %}
-  <div class="chart-wrap">
-    <canvas id="skills-chart" role="img"
-            aria-label="Bar chart of your average score per skill"></canvas>
-  </div>
-  <noscript><p class="empty-state-text">Enable JavaScript to see charts — or use the table below.</p></noscript>
-  <div class="heatmap-grid">
-    {% for row in skill_rows %}
-    <div class="heatmap-cell is-{{ 'high' if row.average_score >= 75 else ('mid' if row.average_score >= 50 else 'low') }}">
-      <span class="heatmap-skill">{{ row.skill }}</span>
-      <span class="heatmap-score">{{ row.average_score | round(0) | int }}/100 · {{ row.samples }}</span>
+  <section class="iq-panel iq-reveal" aria-labelledby="trend-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="trend-title">Overall score trend</h2>
+        <p class="iq-panel-sub">Every completed session, plotted over time.</p>
+      </div>
+      {% if trend %}
+      <div class="iq-panel-meta" aria-label="Trend summary">
+        <span class="iq-meta-chip">{{ trend|length }} session{{ 's' if trend|length != 1 }}</span>
+        <span class="iq-meta-chip">Range {{ (trend|first)[0] }} → {{ (trend|last)[0] }}</span>
+      </div>
+      {% endif %}
     </div>
-    {% endfor %}
-  </div>
-  <p class="stat-note">Average graded-answer score per skill (number of answers after the dot).</p>
-  {% else %}
-  <div class="empty-state">
-    <p class="empty-state-text">Answer questions to build your per-skill heatmap.</p>
-  </div>
-  {% endif %}
-</section>
+    {% if trend %}
+    <div class="chart-wrap">
+      <canvas id="trend-chart" role="img"
+              aria-label="Line chart of overall scores across your completed sessions"></canvas>
+    </div>
+    <noscript><p class="empty-state-text">Enable JavaScript to see charts — or use the numbers below.</p></noscript>
+    <ul class="trend-list">
+      {% for date, score in trend %}<li>{{ date }}: {{ score | round(0) | int }}/100</li>{% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+      <p class="empty-state-text">Complete a session and your score history will chart here.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="iq-panel iq-reveal" aria-labelledby="heatmap-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="heatmap-title">Skill heatmap</h2>
+        <p class="iq-panel-sub">Average graded-answer score per skill.</p>
+      </div>
+      {% if skill_rows %}
+      <div class="iq-panel-meta" aria-label="Skill heatmap summary">
+        <span class="iq-meta-chip">{{ skill_rows|length }} skill{{ 's' if skill_rows|length != 1 }}</span>
+        <span class="iq-meta-chip">Avg {{ ((skill_rows | sum(attribute='average_score')) / (skill_rows | length)) | round(0) | int }}/100</span>
+      </div>
+      {% endif %}
+    </div>
+    {% if skill_rows %}
+    <div class="iq-tier-legend" aria-label="Score tiers">
+      <span class="iq-tier-legend-item"><span class="iq-tier-legend-swatch is-high" aria-hidden="true"></span>Strong (75+)</span>
+      <span class="iq-tier-legend-item"><span class="iq-tier-legend-swatch is-mid" aria-hidden="true"></span>Developing (50-74)</span>
+      <span class="iq-tier-legend-item"><span class="iq-tier-legend-swatch is-low" aria-hidden="true"></span>Needs work (&lt;50)</span>
+    </div>
+    {% endif %}
+    {% if skill_rows %}
+    <div class="chart-wrap">
+      <canvas id="skills-chart" role="img"
+              aria-label="Bar chart of your average score per skill"></canvas>
+    </div>
+    <noscript><p class="empty-state-text">Enable JavaScript to see charts — or use the table below.</p></noscript>
+    <div class="heatmap-grid">
+      {% for row in skill_rows %}
+      <div class="heatmap-cell is-{{ 'high' if row.average_score >= 75 else ('mid' if row.average_score >= 50 else 'low') }}">
+        <span class="heatmap-skill">{{ row.skill }}</span>
+        <span class="heatmap-score">{{ row.average_score | round(0) | int }}/100 · {{ row.samples }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p class="empty-state-text">Answer questions to build your per-skill heatmap.</p>
+    </div>
+    {% endif %}
+  </section>
+
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -114,4 +187,5 @@
 <script src="{{ url_for('static', filename='js/chart.umd.js') }}"></script>
 <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 {% endif %}
+<script src="{{ url_for('static', filename='js/pages.js') }}"></script>
 {% endblock %}

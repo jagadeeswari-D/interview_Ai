@@ -37,6 +37,12 @@ from .ai.errors import (
     GeminiRateLimitError,
 )
 from .auth import login_required
+from .company_presets import (
+    GENERAL_KEY,
+    company_context_for,
+    company_select_options,
+    resolve_company_key,
+)
 from .models import (
     get_interview_memory,
     get_roadmap,
@@ -72,6 +78,8 @@ def view():
         skills_context=days[0]["skill"] if days else "",
         has_weaknesses=bool(weaknesses),
         memory=memory,
+        companies=company_select_options(),
+        selected_company=GENERAL_KEY,
     )
 
 
@@ -90,15 +98,26 @@ def generate():
         )
         return redirect(url_for(".view"))
 
+    # Company Presets (Stage 16): validate the submitted key server-side
+    # against the static allowlist before it can reach Gemini. Blank/"general"
+    # -> General (None); unlisted values (free text, tampered keys) are
+    # rejected outright. The company is a transient generation-time input —
+    # the roadmap keeps no company column.
+    try:
+        _, company_preset = resolve_company_key(request.form.get("company"))
+    except ValueError:
+        flash("Choose a valid company context.", "error")
+        return redirect(url_for(".view"))
+
     # Capture before regeneration wipes the previous plan.
     had_existing_plan = bool(get_roadmap(g.user["id"]))
 
     service = current_app.extensions["gemini"]
     try:
-        payload = service.generate(
-            "generate_roadmap",
-            {"weak_skills": selected},
-        )
+        inputs = {"weak_skills": selected}
+        if company_preset is not None:
+            inputs["company"] = company_context_for(company_preset)
+        payload = service.generate("generate_roadmap", inputs)
     except GeminiConfigError:
         flash(
             "AI features are not configured yet. Ask an operator to set the "

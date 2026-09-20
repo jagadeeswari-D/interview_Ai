@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Settings — InterviewIQ{% endblock %}
+{% block body_class %}page-settings{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="iq-settings">
+
+  <header class="iq-topbar iq-reveal">
+    <div class="iq-topbar-copy">
+      <h1 class="iq-greeting">Settings</h1>
+      <p class="iq-topbar-sub">Manage your InterviewIQ experience.</p>
+    </div>
+    <a class="iq-profile-shortcut" href="{{ url_for('settings.view') }}" aria-label="Your profile">
+      <span class="avatar iq-profile-avatar" aria-hidden="true">{{ user_initial }}</span>
+      <span class="iq-profile-shortcut-label">{{ user_name }}</span>
+    </a>
+  </header>
+
+  <div class="iq-settings-layout">
+    <!-- Vertical section nav -->
+    <nav class="iq-settings-nav" aria-label="Settings sections">
+      <button type="button" class="iq-settings-tab is-active" data-section="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Profile
+      </button>
+      <button type="button" class="iq-settings-tab" data-section="appearance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+        Appearance
+      </button>
+      <button type="button" class="iq-settings-tab" data-section="preferences">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 20H8"></path><path d="M16 8v3a4 4 0 0 1-4 4H5a3 3 0 0 1 0-6h7"></path><path d="M16 8a1.5 1.5 0 0 0 3 0 1.5 1.5 0 1 0-3 0z"></path></svg>
+        Interview Preferences
+      </button>
+      <button type="button" class="iq-settings-tab" data-section="notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+        Notifications
+      </button>
+      <button type="button" class="iq-settings-tab" data-section="account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Account
+      </button>
+    </nav>
+
+    <!-- Panels -->
+    <div class="iq-settings-panels">
+
+      <!-- PROFILE -->
+      <section class="iq-settings-panel is-active" data-panel="profile" aria-labelledby="prof-title">
+        <h2 class="iq-panel-title" id="prof-title">Profile</h2>
+        <p class="iq-panel-sub">Review the personal details on your account. To edit your target role and skills, use the profile page.</p>
+        <div class="iq-settings-field">
+          <span class="iq-settings-label">Full name</span>
+          <span class="iq-settings-value">{{ user_name }}</span>
+        </div>
+        <div class="iq-settings-field">
+          <span class="iq-settings-label">Email</span>
+          <span class="iq-settings-value">{{ email }}</span>
+        </div>
+        <a class="button button-ghost iq-btn" href="{{ url_for('profile.view') }}">Edit profile</a>
+      </section>
+
+      <!-- APPEARANCE -->
+      <section class="iq-settings-panel" data-panel="appearance" aria-labelledby="appearance-title">
+        <h2 class="iq-panel-title" id="appearance-title">Appearance</h2>
+        <p class="iq-panel-sub">Choose how InterviewIQ looks across the app.</p>
+
+        <form method="post" action="{{ url_for('settings.save_preferences') }}" class="iq-save-form" data-save-form>
+          {{ csrf_token() }}
+
+          <fieldset class="iq-settings-group">
+            <legend class="iq-settings-group-title">Theme</legend>
+            <div class="iq-theme-options">
+              {% for value, label in [('dark','Dark'),('light','Light'),('system','System')] %}
+              <label class="iq-theme-option">
+                <input type="radio" name="theme" value="{{ value }}"
+                       class="iq-radio"
+                       {% if settings.theme == value %}checked{% endif %}
+                       data-theme-radio="{{ value }}">
+                <span class="iq-theme-chip">{{ label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <p class="iq-hint">Your choice persists and applies immediately.</p>
+          </fieldset>
+
+          <button type="submit" class="button button-primary iq-btn iq-save-btn">Save appearance</button>
+        </form>
+      </section>
+
+      <!-- INTERVIEW PREFERENCES -->
+      <section class="iq-settings-panel" data-panel="preferences" aria-labelledby="prefs-title">
+        <h2 class="iq-panel-title" id="prefs-title">Interview Preferences</h2>
+        <p class="iq-panel-sub">Defaults used when you start a session.</p>
+
+        <form method="post" action="{{ url_for('settings.save_preferences') }}" class="iq-save-form" data-save-form>
+          {{ csrf_token() }}
+
+          <div class="iq-settings-field">
+            <label class="iq-settings-label" for="pref-mode">Preferred interview mode</label>
+            <select id="pref-mode" name="preferred_mode" class="iq-select">
+              <option value="real" {% if settings.preferred_mode == 'real' %}selected{% endif %}>Real Interview (timed)</option>
+              <option value="practice" {% if settings.preferred_mode == 'practice' %}selected{% endif %}>Smart Practice (single topic)</option>
+            </select>
+          </div>
+
+          <div class="iq-settings-field">
+            <label class="iq-settings-label" for="pref-difficulty">Difficulty</label>
+            <select id="pref-difficulty" name="difficulty" class="iq-select">
+              <option value="easy" {% if settings.difficulty == 'easy' %}selected{% endif %}>Easy</option>
+              <option value="medium" {% if settings.difficulty == 'medium' %}selected{% endif %}>Medium</option>
+              <option value="hard" {% if settings.difficulty == 'hard' %}selected{% endif %}>Hard</option>
+            </select>
+          </div>
+
+          <div class="iq-settings-field">
+            <label class="iq-settings-label" for="pref-duration">Interview duration</label>
+            <select id="pref-duration" name="duration" class="iq-select">
+              <option value="15" {% if settings.duration == '15' %}selected{% endif %}>15 minutes</option>
+              <option value="30" {% if settings.duration == '30' %}selected{% endif %}>30 minutes</option>
+              <option value="45" {% if settings.duration == '45' %}selected{% endif %}>45 minutes</option>
+              <option value="60" {% if settings.duration == '60' %}selected{% endif %}>60 minutes</option>
+            </select>
+          </div>
+
+          <div class="iq-settings-field">
+            <span class="iq-settings-label">Focus areas</span>
+            <div class="iq-check-grid">
+              {% for value, label in [('communication','Communication'),('technical','Technical knowledge'),('problem_solving','Problem solving'),('confidence','Confidence'),('time_management','Time management')] %}
+              <label class="iq-check">
+                <input type="checkbox" name="focus_areas" value="{{ value }}" class="iq-checkbox"
+                       {% if value in settings.focus_areas %}checked{% endif %}>
+                <span>{{ label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button type="submit" class="button button-primary iq-btn iq-save-btn">Save preferences</button>
+        </form>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section class="iq-settings-panel" data-panel="notifications" aria-labelledby="notif-title">
+        <h2 class="iq-panel-title" id="notif-title">Notifications</h2>
+        <p class="iq-panel-sub">Choose what you'd like to be reminded about.</p>
+
+        <form method="post" action="{{ url_for('settings.save_preferences') }}" class="iq-save-form" data-save-form>
+          {{ csrf_token() }}
+
+          <label class="iq-toggle-row">
+            <span class="iq-toggle-copy">
+              <span class="iq-toggle-name">Interview reminders</span>
+              <span class="iq-toggle-desc">Reminders before your scheduled real interviews.</span>
+            </span>
+            <span class="iq-toggle">
+              <input type="checkbox" name="interview_reminders" class="iq-toggle-input"
+                     {% if settings.notifications.interview_reminders %}checked{% endif %}>
+              <span class="iq-toggle-slider" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="iq-toggle-row">
+            <span class="iq-toggle-copy">
+              <span class="iq-toggle-name">Progress updates</span>
+              <span class="iq-toggle-desc">Updates when your readiness score or skills improve.</span>
+            </span>
+            <span class="iq-toggle">
+              <input type="checkbox" name="progress_updates" class="iq-toggle-input"
+                     {% if settings.notifications.progress_updates %}checked{% endif %}>
+              <span class="iq-toggle-slider" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="iq-toggle-row">
+            <span class="iq-toggle-copy">
+              <span class="iq-toggle-name">Practice reminders</span>
+              <span class="iq-toggle-desc">Gentle nudges to keep your streak alive.</span>
+            </span>
+            <span class="iq-toggle">
+              <input type="checkbox" name="practice_reminders" class="iq-toggle-input"
+                     {% if settings.notifications.practice_reminders %}checked{% endif %}>
+              <span class="iq-toggle-slider" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <p class="iq-hint">Preferences are stored on your account. In-app reminders are applied when you start a session.</p>
+          <button type="submit" class="button button-primary iq-btn iq-save-btn">Save notifications</button>
+        </form>
+      </section>
+
+      <!-- ACCOUNT -->
+      <section class="iq-settings-panel" data-panel="account" aria-labelledby="account-title">
+        <h2 class="iq-panel-title" id="account-title">Account</h2>
+        <p class="iq-panel-sub">Password and account actions.</p>
+
+        <form method="post" action="{{ url_for('settings.change_password') }}" data-save-form data-no-ajax>
+          {{ csrf_token() }}
+          <div class="iq-settings-field">
+            <label class="iq-settings-label" for="pw-current">Current password</label>
+            <input class="field-input iq-input" type="password" id="pw-current" name="current_password"
+                   autocomplete="current-password" required>
+          </div>
+          <div class="iq-settings-field">
+            <label class="iq-settings-label" for="pw-new">New password</label>
+            <input class="field-input iq-input" type="password" id="pw-new" name="new_password"
+                   autocomplete="new-password" minlength="{{ min_password_length }}" required>
+            <p class="iq-hint">At least {{ min_password_length }} characters, with a letter and a number.</p>
+          </div>
+          <div class="iq-settings-field">
+            <label class="iq-settings-label" for="pw-confirm">Confirm new password</label>
+            <input class="field-input iq-input" type="password" id="pw-confirm" name="confirm_password"
+                   autocomplete="new-password" required>
+          </div>
+          <button type="submit" class="button button-primary iq-btn iq-save-btn">Change password</button>
+        </form>
+
+        <hr class="soft-divider">
+        <div class="iq-account-row">
+          <div>
+            <div class="iq-settings-label">Sign out</div>
+            <p class="iq-hint">End this session and return to the landing page.</p>
+          </div>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            {{ csrf_token() }}
+            <button type="submit" class="button button-ghost iq-btn">Log out</button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="iq-toast" role="status" aria-live="polite" data-toast>
+    <span class="iq-toast-icon" aria-hidden="true"></span>
+    <span class="iq-toast-text">Saved</span>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages.js') }}"></script>
+{% endblock %}

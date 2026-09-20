@@ -40,6 +40,14 @@ from .ai.errors import (
     GeminiRateLimitError,
 )
 from .auth import login_required
+from .achievements import evaluate_achievements
+from .company_presets import (
+    GENERAL_KEY,
+    company_context_for,
+    company_preset_by_key,
+    company_select_options,
+    resolve_company_key,
+)
 from .evaluation import (
     SCORE_DIMENSIONS,
     evaluate_answer,
@@ -59,6 +67,7 @@ from .models import (
     set_interview_status,
 )
 from .ratelimit import check_gemini_limit
+from . import xp
 
 interview_bp = Blueprint("interview", __name__)
 
@@ -109,6 +118,8 @@ def config():
         difficulties=DIFFICULTIES,
         types=INTERVIEW_TYPES,
         budgets=QUESTION_BUDGETS,
+        companies=company_select_options(),
+        selected_company=GENERAL_KEY,
     )
 
 
@@ -137,16 +148,28 @@ def start():
             flash(message, "error")
         return redirect(url_for(".config"))
 
+    # Company Presets (Phase 10 / Stage 1): validate the submitted key server-
+    # side against the static allowlist before it can reach Gemini or the
+    # database. Blank/"general" -> General (None); unlisted values are
+    # rejected outright.
+    try:
+        company_key, company_preset = resolve_company_key(
+            request.form.get("company")
+        )
+    except ValueError:
+        flash("Choose a valid company context.", "error")
+        return redirect(url_for(".config"))
+
     service = current_app.extensions["gemini"]
     try:
-        payload = service.generate(
-            "generate_question",
-            {
-                "role": role,
-                "topic": TYPE_TOPICS[interview_type],
-                "difficulty": difficulty,
-            },
-        )
+        inputs = {
+            "role": role,
+            "topic": TYPE_TOPICS[interview_type],
+            "difficulty": difficulty,
+        }
+        if company_preset is not None:
+            inputs["company"] = company_context_for(company_preset)
+        payload = service.generate("generate_question", inputs)
     except GeminiConfigError:
         flash(
             "AI features are not configured yet. Ask an operator to set the "
@@ -177,6 +200,7 @@ def start():
         interview_type,
         budget["question_limit"],
         budget["duration_minutes"],
+        company_key=company_key,
     )
     add_question(
         interview["id"],
@@ -197,8 +221,14 @@ def live(interview_id):
         return redirect(url_for(".complete", interview_id=interview_id))
 
     if get_open_question(interview_id) is None:
-        # Every asked question is answered but the next one was never prepared
-        # (the adaptive step failed mid-interview): recovery screen.
+        if _remaining_seconds(interview) <= 0:
+            # The timer expired while the interview was stuck on the
+            # recovery screen: close it now so an empty session can never
+            # linger in_progress forever (server-enforced expiry, H.6).
+            _finalize(interview)
+            return redirect(url_for(".complete", interview_id=interview_id))
+        # Every asked question is answered but the next one was never
+        # prepared (the adaptive step failed mid-interview): recovery screen.
         return render_template(
             "interview.html",
             active_page="interview",
@@ -206,6 +236,7 @@ def live(interview_id):
             interview=interview,
             type_label=INTERVIEW_TYPES.get(interview["type"], interview["type"]),
             graded_count=_answered_count(interview_id),
+            company_preset=_company_preset_for(interview),
         )
 
     remaining = _remaining_seconds(interview)
@@ -226,6 +257,7 @@ def live(interview_id):
         dimensions=SCORE_DIMENSIONS,
         preserved_answer="",
         type_label=INTERVIEW_TYPES.get(interview["type"], interview["type"]),
+        company_preset=_company_preset_for(interview),
     )
 
 
@@ -265,16 +297,29 @@ def submit_answer(interview_id):
     service = current_app.extensions["gemini"]
     try:
         # Real Mode evaluates against the raw answer (no concept hints are
-        # leaked into the prompt — expected_concepts stay suppressed).
-        evaluation = evaluate_answer(
-            service, question["question"], answer_text, [],
-        )
+        # leaked into the prompt — expected_concepts stay suppressed). The
+        # company context comes from the persisted allowlisted interview key.
+        company_preset = _company_preset_for(interview)
+        if company_preset is not None:
+            evaluation = evaluate_answer(
+                service, question["question"], answer_text, [],
+                company=company_context_for(company_preset),
+            )
+        else:
+            evaluation = evaluate_answer(
+                service, question["question"], answer_text, [],
+            )
     except GeminiError as exc:
         # Nothing saved yet: re-render the live view so the candidate can
         # resubmit their kept text (graceful async error state, Section I).
         return _render_live_error(interview, answer_text, exc)
 
     tech_acc = _save_evaluation(interview, question, answer_text, evaluation)
+
+    if tech_acc is None:
+        # A duplicate submission raced ahead and already stored this answer;
+        # that request owns the advance/finalize work, so just refresh state.
+        return redirect(url_for(".live", interview_id=interview_id))
 
     finished = (
         _answered_count(interview_id) >= interview["question_limit"]
@@ -366,6 +411,7 @@ def complete(interview_id):
         averages=averages,
         dimensions=SCORE_DIMENSIONS,
         graded_count=len(scored),
+        company_preset=_company_preset_for(interview),
     )
 
 
@@ -398,30 +444,34 @@ def _advance(service, interview, answered_question, answer_text, tech_acc):
         entity = None
 
     if entity is not None:
-        follow_up = service.generate(
-            "generate_follow_up",
-            {
-                "question": answered_question["question"],
-                "answer": answer_text,
-                "entity": entity["text"],
-                "depth": _depth_for(tech_acc),
-                "context": _context_window(interview_id,
-                                           exclude=answered_question["id"]),
-            },
-        )
+        follow_up_inputs = {
+            "question": answered_question["question"],
+            "answer": answer_text,
+            "entity": entity["text"],
+            "depth": _depth_for(tech_acc),
+            "context": _context_window(interview_id,
+                                       exclude=answered_question["id"]),
+        }
+        # Company Presets (Stage 16): an additional contextual signal only —
+        # the follow-up always probes what the candidate's own mention opened.
+        preset = _company_preset_for(interview)
+        if preset is not None:
+            follow_up_inputs["company"] = company_context_for(preset)
+        follow_up = service.generate("generate_follow_up", follow_up_inputs)
         add_question(interview_id, follow_up["follow_up_question"], "follow-up", [])
         return
 
     # Fallback: nothing worth probing deeper -> a fresh question that keeps
-    # the same role/type/difficulty shape.
-    fresh = service.generate(
-        "generate_question",
-        {
-            "role": interview["role"],
-            "topic": TYPE_TOPICS.get(interview["type"], "general skills"),
-            "difficulty": interview["difficulty"],
-        },
-    )
+    # the same role/type/difficulty shape (and company context, if any).
+    inputs = {
+        "role": interview["role"],
+        "topic": TYPE_TOPICS.get(interview["type"], "general skills"),
+        "difficulty": interview["difficulty"],
+    }
+    preset = _company_preset_for(interview)
+    if preset is not None:
+        inputs["company"] = company_context_for(preset)
+    fresh = service.generate("generate_question", inputs)
     add_question(
         interview_id,
         fresh["question"],
@@ -489,8 +539,13 @@ def _tech_accuracy_of(entry):
 
 
 def _save_evaluation(interview, question, answer_text, evaluation):
-    """Store the hidden per-answer evaluation + performance row."""
-    _, technical_accuracy = store_evaluation(
+    """Store the hidden per-answer evaluation + performance row.
+
+    Returns the technical_accuracy score, or None when a duplicate
+    submission means another request already stored this answer (the
+    caller must then skip finalize/advance to avoid double work).
+    """
+    inserted, _, technical_accuracy = store_evaluation(
         question["id"],
         answer_text,
         evaluation,
@@ -498,7 +553,7 @@ def _save_evaluation(interview, question, answer_text, evaluation):
         skill_label=interview["type"].capitalize(),
         interview_id=interview["id"],
     )
-    return technical_accuracy
+    return technical_accuracy if inserted else None
 
 
 def _finalize(interview):
@@ -510,6 +565,18 @@ def _finalize(interview):
     # Stage 4 (blueprint K.8): aggregate weaknesses and refresh the
     # InterviewMemory derived cache once the session is closed.
     on_interview_completed(interview["user_id"], interview, transcript)
+
+    # Stage 3 (Phase 9): a finished, graded session can unlock achievements.
+    evaluate_achievements(interview["user_id"])
+
+    # Stage 14: one 50 XP award for the whole interview, only when the
+    # session actually produced a grade (an empty session that expired with
+    # no graded answers never pays). The UNIQUE(user_id, source, event_key)
+    # boundary keeps a raised/finished duplicate from ever paying twice.
+    if overall is not None:
+        xp.award(interview["user_id"], xp.SRC_REAL_INTERVIEW,
+                 interview["id"], xp.XP_REAL_INTERVIEW)
+    xp.award_achievement_bonuses(interview["user_id"])
 
 
 def _remaining_seconds(interview):
@@ -562,6 +629,7 @@ def _render_live_error(interview, preserved_answer, exc):
         dimensions=SCORE_DIMENSIONS,
         preserved_answer=preserved_answer,
         type_label=INTERVIEW_TYPES.get(interview["type"], interview["type"]),
+        company_preset=_company_preset_for(interview),
     )
 
 
@@ -584,4 +652,17 @@ def _redirect_pending(interview_id, exc):
         interview=interview,
         type_label=INTERVIEW_TYPES.get(interview["type"], interview["type"]),
         graded_count=_answered_count(interview_id),
+        company_preset=_company_preset_for(interview),
     )
+
+
+def _company_preset_for(interview):
+    """Resolve the interview's allowlisted company preset (or None)."""
+    if interview is None:
+        return None
+    key = (
+        interview["company_key"]
+        if hasattr(interview, "keys") and "company_key" in interview.keys()
+        else None
+    )
+    return company_preset_by_key(key) if key else None

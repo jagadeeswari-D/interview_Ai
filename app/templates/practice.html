@@ -1,164 +1,279 @@
 {% extends "base.html" %}
 {% block title %}Smart Practice — InterviewIQ{% endblock %}
+{% block body_class %}page-practice{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/practice.css') }}">
+{% endblock %}
 
 {% block content %}
-<header class="page-header">
-  <h1 class="page-title">Smart Practice</h1>
-  {% if view == 'pick' %}
-  <p class="page-subtitle">Pick a topic and get an interview question tailored for a {{ role_label }} role.</p>
-  {% elif view == 'answer' %}
-  <p class="page-subtitle">Answer below — you'll get instant rubric-based feedback from the AI coach.</p>
-  {% else %}
-  <p class="page-subtitle">Here's how your answer scored.</p>
-  {% endif %}
-</header>
+<div class="sp-flow">
 
-{% if view == 'pick' %}
-{% if prefill_topic %}
-<div class="alert alert-info" role="status">
-  <span class="alert-message">Practicing a roadmap topic — <strong>{{ prefill_topic }}</strong></span>
-</div>
-{% endif %}
-<section class="card">
-  <h2 class="card-title">Choose a topic</h2>
-  <form method="post" action="{{ url_for('practice.new_question') }}" class="form">
-    {{ csrf_token() }}
-    <div class="field">
-      <label class="field-label" for="topic">Topic</label>
-      <input class="field-input" type="text" id="topic" name="topic" list="topic-suggestions"
-             required minlength="2" maxlength="80" autofocus
-             value="{{ prefill_topic or '' }}"
-             placeholder="e.g. SQL joins, REST API design">
-      <datalist id="topic-suggestions">
-        {% for suggestion in suggestions %}
-        <option value="{{ suggestion }}"></option>
-        {% endfor %}
-      </datalist>
-      <p class="field-hint">Type any topic, or pick one of the suggestions.</p>
-    </div>
-
-    <div class="field">
-      <label class="field-label" for="difficulty">Difficulty</label>
-      <select class="field-input" id="difficulty" name="difficulty">
-        {% for level in difficulties %}
-        <option value="{{ level }}" {{ 'selected' if level == prefill_difficulty }}>{{ level | capitalize }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <button type="submit" class="button button-primary">Get interview question</button>
-    <p class="field-hint">Each generated question is logged to your practice history.</p>
-  </form>
-</section>
-{% endif %}
-
-{% if view == 'answer' %}
-<section class="card">
-  <div class="question-meta">
-    <span class="badge">{{ q.question_type | capitalize if q.question_type else 'Question' }}</span>
-    <span class="badge badge-muted">{{ q.difficulty | capitalize }}</span>
-    <span class="question-topic">{{ q.topic }}</span>
-  </div>
-  <p class="ai-text question-text">{{ q.question }}</p>
-
-  <details class="reveal">
-    <summary>Need a hint?</summary>
-    <div class="reveal-body">
-      <p>A strong answer would touch on:</p>
-      <ul class="concept-list">
-        {% for concept in concepts %}
-        <li>{{ concept }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  </details>
-
-  <form method="post" action="{{ url_for('practice.submit_answer') }}" class="form">
-    {{ csrf_token() }}
-    <input type="hidden" name="question_id" value="{{ q.id }}">
-    <div class="field">
-      <label class="field-label" for="answer">Your answer</label>
-      <textarea class="field-input" id="answer" name="answer" rows="8" required
-                maxlength="5000" autofocus
-                placeholder="Answer as you would in a real interview…"></textarea>
-    </div>
-    <button type="submit" class="button button-primary">Submit for evaluation</button>
-  </form>
-</section>
-<p class="practice-alt"><a href="{{ url_for('practice.pick') }}">← Choose a different topic</a></p>
-{% endif %}
-
-{% if view == 'result' %}
-<section class="card" aria-live="polite">
-  <div class="question-meta">
-    <span class="badge">{{ q.question_type | capitalize if q.question_type else 'Question' }}</span>
-    <span class="question-topic">{{ q.topic }}</span>
-  </div>
-  <p class="ai-text question-text">{{ q.question }}</p>
-
-  <div class="score-summary">
-    <div class="score-overall">
-      <span class="stat-value">{{ answer.score | round(0) | int }}<span class="score-denominator">/100</span></span>
-      <span class="stat-label">Overall score</span>
-    </div>
-    <ul class="score-list">
-      {% for key, label in dimensions %}
-      {% set value = answer.scores.get(key) %}
-      {% if value is not none %}
-      <li class="score-item">
-        <span class="score-item-label">{{ label }}</span>
-        <span class="meter" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
-          <span class="meter-fill meter-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"
-                style="width: {{ value | round(0) | int }}%;"></span>
-        </span>
-        <span class="score-item-value">{{ value | round(0) | int }}</span>
-      </li>
+  <!-- HERO / INTRO -->
+  <section class="sp-hero iq-reveal" aria-labelledby="sp-hero-title">
+    <div class="sp-hero-ambient" aria-hidden="true"></div>
+    <div class="sp-hero-content">
+      <p class="sp-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> AI Interview Coach</p>
+      <h1 class="sp-hero-title" id="sp-hero-title">Smart Practice</h1>
+      <p class="sp-hero-tagline">Practice smarter. Improve every answer.</p>
+      <p class="sp-hero-sub">Choose a topic, answer an interview question, and get <strong>instant AI coaching</strong>.</p>
+      {% if view == 'pick' %}
+      <p class="sp-role-line">Questions are tailored to a <span class="sp-role-chip">{{ role_label }}</span> role.</p>
       {% endif %}
-      {% endfor %}
-    </ul>
+    </div>
+  </section>
+
+  {% if view == 'pick' %}
+  <div class="sp-setup">
+
+    {% if prefill_topic %}
+    <div class="sp-alert sp-alert-info iq-reveal" role="status">
+      <span>Practicing a roadmap topic — <strong>{{ prefill_topic }}</strong></span>
+    </div>
+    {% endif %}
+
+    <section class="sp-panel iq-reveal" aria-labelledby="sp-setup-title">
+      <div class="sp-panel-head">
+        <div>
+          <h2 class="sp-panel-title" id="sp-setup-title">Choose a topic</h2>
+          <p class="sp-panel-sub">Focus this session on one skill, then answer a generated question.</p>
+        </div>
+      </div>
+
+      <form method="post" action="{{ url_for('practice.new_question') }}" class="sp-setup-form" data-submit-guard>
+        {{ csrf_token() }}
+        <div class="sp-setup-grid">
+          <div class="sp-field">
+            <label class="sp-label" for="topic">Topic</label>
+            <input class="sp-input" type="text" id="topic" name="topic" list="topic-suggestions"
+                   required minlength="2" maxlength="80" autofocus
+                   value="{{ prefill_topic or '' }}"
+                   placeholder="e.g. SQL joins, REST API design">
+            <datalist id="topic-suggestions">
+              {% for suggestion in suggestions %}
+              <option value="{{ suggestion }}"></option>
+              {% endfor %}
+            </datalist>
+            <div class="sp-suggestions" role="group" aria-label="Suggested topics">
+              {% for suggestion in suggestions %}
+              <button type="button" class="sp-chip" data-suggest="{{ suggestion }}">{{ suggestion }}</button>
+              {% endfor %}
+            </div>
+            <p class="sp-hint">Type any topic, or tap a suggestion to fill it in.</p>
+          </div>
+
+          <div class="sp-field">
+            <label class="sp-label" for="difficulty" id="sp-difficulty-label">Difficulty</label>
+            <div class="sp-select-wrap">
+              <select class="sp-select" id="difficulty" name="difficulty" aria-labelledby="sp-difficulty-label">
+                {% for level in difficulties %}
+                <option value="{{ level }}" {{ 'selected' if level == prefill_difficulty }}>{{ level | capitalize }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <p class="sp-hint">A harder level pushes for deeper answers.</p>
+          </div>
+        </div>
+
+        {% include "_company_select.html" %}
+
+        <div class="sp-setup-actions">
+          <button type="submit" class="sp-btn sp-btn-primary sp-btn-large" data-loading-label="Generating…">
+            <span class="sp-btn-label">Get interview question</span>
+            <span class="sp-spinner" aria-hidden="true"></span>
+          </button>
+          <p class="sp-hint sp-hint-inline">Each generated question is logged to your practice history.</p>
+        </div>
+      </form>
+    </section>
   </div>
-</section>
-
-<section class="card">
-  <h2 class="card-title">Coach feedback</h2>
-  <p class="ai-text">{{ answer.feedback }}</p>
-
-  {% if answer.missing_points %}
-  <h3 class="sub-heading">Missing points</h3>
-  <ul class="missing-list">
-    {% for point in answer.missing_points %}
-    <li>{{ point }}</li>
-    {% endfor %}
-  </ul>
   {% endif %}
 
-  <details class="reveal">
-    <summary>Show model answer</summary>
-    <div class="reveal-body">
-      <p class="ai-text">{{ answer.model_answer }}</p>
+  {% if view == 'answer' %}
+  <section class="sp-panel sp-question-card iq-reveal" aria-labelledby="sp-question-heading">
+    <div class="sp-question-meta">
+      <span class="sp-badge sp-badge-accent">Question {{ q.sequence_order }}</span>
+      {% if q.question_type %}<span class="sp-badge">{{ q.question_type | capitalize }}</span>{% endif %}
+      <span class="sp-badge sp-badge-{{ q.difficulty }}">{{ q.difficulty | capitalize }}</span>
+      {% if company_preset %}<span class="sp-badge sp-badge-company">{{ company_preset.name }}</span>{% endif %}
+      <span class="sp-topic">{{ q.topic }}</span>
     </div>
-  </details>
 
-  <details class="reveal">
-    <summary>Show your answer</summary>
-    <div class="reveal-body">
-      <p class="user-answer-text">{{ answer.user_answer }}</p>
-    </div>
-  </details>
-</section>
+    <h2 class="visually-hidden" id="sp-question-heading">Interview question</h2>
+    <p class="sp-question-text">{{ q.question }}</p>
 
-<section class="card">
-  <h2 class="card-title">What next?</h2>
-  <div class="quick-actions">
-    <form method="post" action="{{ url_for('practice.new_question') }}">
+    <details class="sp-reveal-box">
+      <summary>
+        <span class="sp-reveal-summary-label">Need a hint?</span>
+        <span class="sp-reveal-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="sp-reveal-body">
+        <p class="sp-reveal-lead">A strong answer would touch on:</p>
+        <ul class="sp-concept-list">
+          {% for concept in concepts %}
+          <li>{{ concept }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </details>
+
+    <form method="post" action="{{ url_for('practice.submit_answer') }}" class="sp-answer-form" data-submit-guard data-answer-form>
       {{ csrf_token() }}
-      <input type="hidden" name="interview_id" value="{{ q.interview_id }}">
-      <input type="hidden" name="topic" value="{{ q.topic }}">
-      <input type="hidden" name="difficulty" value="{{ q.difficulty }}">
-      <button type="submit" class="button button-primary button-block">Try again — new question on “{{ q.topic }}”</button>
+      <input type="hidden" name="question_id" value="{{ q.id }}">
+      <div class="sp-field">
+        <div class="sp-label-row">
+          <label class="sp-label" for="answer">Your answer</label>
+          <span class="sp-char-count" data-char-count>0 / 5000</span>
+        </div>
+        <textarea class="sp-textarea" id="answer" name="answer" rows="8" required
+                  maxlength="5000" autofocus
+                  placeholder="Answer as you would in a real interview…"></textarea>
+        <p class="sp-hint">Take your time — depth beats length.</p>
+      </div>
+
+      <div class="sp-submit-row">
+        <button type="submit" class="sp-btn sp-btn-primary sp-btn-large" data-loading-label="Evaluating…">
+          <span class="sp-btn-label">Submit for evaluation</span>
+          <span class="sp-spinner" aria-hidden="true"></span>
+        </button>
+      </div>
     </form>
-    <a class="button button-block" href="{{ url_for('practice.pick') }}">Practice a different topic</a>
-  </div>
-</section>
-{% endif %}
+
+    <p class="sp-alt-link"><a href="{{ url_for('practice.pick') }}">← Choose a different topic</a></p>
+  </section>
+  {% endif %}
+
+  {% if view == 'result' %}
+  <section class="sp-result" aria-live="polite">
+
+    <!-- PRACTICE CONTEXT -->
+    <div class="sp-panel iq-reveal">
+      <div class="sp-question-meta">
+        <span class="sp-badge sp-badge-accent">Question {{ q.sequence_order }}</span>
+        {% if q.question_type %}<span class="sp-badge">{{ q.question_type | capitalize }}</span>{% endif %}
+        <span class="sp-badge sp-badge-{{ q.difficulty }}">{{ q.difficulty | capitalize }}</span>
+        {% if company_preset %}<span class="sp-badge sp-badge-company">{{ company_preset.name }}</span>{% endif %}
+        <span class="sp-topic">{{ q.topic }}</span>
+      </div>
+      <p class="sp-context-question">{{ q.question }}</p>
+    </div>
+
+    <!-- SCORES -->
+    <div class="sp-feedback-grid">
+      <div class="sp-panel sp-score-card iq-reveal">
+        <span class="sp-score-cap">Overall score</span>
+<div class="sp-ring" data-score="{{ answer.score | round(0) | int }}"
+              role="img" aria-label="Overall score {{ answer.score | round(0) | int }} out of 100">
+          <span class="sp-ring-inner">
+            <span class="sp-ring-value" data-count="{{ answer.score | round(0) | int }}">{{ answer.score | round(0) | int }}</span>
+            <span class="sp-ring-denominator">/100</span>
+          </span>
+        </div>
+        <p class="sp-score-note">
+          {% if answer.score >= 75 %}Strong showing — keep refining.{% elif answer.score >= 50 %}Solid foundation — sharpen the details below.{% else %}Good start — focus on the fundamentals below.{% endif %}
+        </p>
+      </div>
+
+      <div class="sp-panel iq-reveal">
+        <div class="sp-panel-head">
+          <div>
+            <h2 class="sp-panel-title">Score breakdown</h2>
+            <p class="sp-panel-sub">Your rubric dimensions from the AI coach.</p>
+          </div>
+        </div>
+        <ul class="sp-dims">
+          {% for key, label in dimensions %}
+          {% set value = answer.scores.get(key) %}
+          {% if value is not none %}
+          <li class="sp-dim" data-bar="{{ value | round(0) | int }}">
+            <div class="sp-dim-line">
+              <span class="sp-dim-name">{{ label }}</span>
+              <span class="sp-dim-val" data-count="{{ value | round(0) | int }}">{{ value | round(0) | int }}</span>
+            </div>
+            <span class="sp-dim-track">
+              <span class="sp-dim-fill is-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"></span>
+            </span>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- COACH FEEDBACK -->
+    <section class="sp-panel iq-reveal" aria-labelledby="sp-feedback-title">
+      <div class="sp-panel-head">
+        <div>
+          <h2 class="sp-panel-title" id="sp-feedback-title">Coach feedback</h2>
+          <p class="sp-panel-sub">Straight from your AI coach — actionable, specific, honest.</p>
+        </div>
+      </div>
+
+      <p class="sp-feedback-text">{{ answer.feedback }}</p>
+
+      {% if answer.missing_points %}
+      <div class="sp-missing">
+        <h3 class="sp-missing-title">Missing points to add next time</h3>
+        <ul class="sp-missing-list">
+          {% for point in answer.missing_points %}
+          <li>{{ point }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="sp-coach-actions">
+        <details class="sp-reveal-box">
+          <summary>
+            <span class="sp-reveal-summary-label">Show model answer</span>
+            <span class="sp-reveal-caret" aria-hidden="true"></span>
+          </summary>
+          <div class="sp-reveal-body">
+            <p class="sp-model-answer">{{ answer.model_answer }}</p>
+          </div>
+        </details>
+        <details class="sp-reveal-box">
+          <summary>
+            <span class="sp-reveal-summary-label">Show your answer</span>
+            <span class="sp-reveal-caret" aria-hidden="true"></span>
+          </summary>
+          <div class="sp-reveal-body">
+            <p class="sp-answer-text">{{ answer.user_answer }}</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- WHAT NEXT -->
+    <section class="sp-panel iq-reveal" aria-labelledby="sp-next-title">
+      <div class="sp-panel-head">
+        <div>
+          <h2 class="sp-panel-title" id="sp-next-title">What should I do next?</h2>
+          <p class="sp-panel-sub">Keep the momentum going — your coach suggests another round.</p>
+        </div>
+      </div>
+      <div class="sp-next-actions">
+        <form method="post" action="{{ url_for('practice.new_question') }}" data-submit-guard>
+          {{ csrf_token() }}
+          <input type="hidden" name="interview_id" value="{{ q.interview_id }}">
+          <input type="hidden" name="topic" value="{{ q.topic }}">
+          <input type="hidden" name="difficulty" value="{{ q.difficulty }}">
+          {% if q.company_key %}<input type="hidden" name="company" value="{{ q.company_key }}">{% endif %}
+          <button type="submit" class="sp-btn sp-btn-primary sp-btn-large" data-loading-label="Generating…">
+            <span class="sp-btn-label">Next question on “{{ q.topic }}”</span>
+            <span class="sp-spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+        <a class="sp-btn sp-btn-ghost sp-btn-large" href="{{ url_for('practice.pick') }}">Practice a different topic</a>
+      </div>
+    </section>
+
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/practice.js') }}"></script>
 {% endblock %}

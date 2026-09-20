@@ -1,0 +1,87 @@
+/* InterviewIQ — Question Bookmarks (Replay).
+ * Bookmark toggle (walkthrough) + Saved questions panel (Replay index).
+ * Scoped to the Replay page; reuses global buttons/badges/history-list styles.
+ * Strict CSP: no inline styles or scripts here — the toggle is a native form.
+ */
+body.page-replay .iq-panel-head .bookmark-form {
+  margin-left: auto;
+}
+
+body.page-replay .bookmark-form {
+  display: inline-flex;
+}
+
+body.page-replay .bookmark-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.page-replay .bookmark-toggle svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transition: fill 0.2s ease;
+}
+
+body.page-replay .bookmark-toggle:hover,
+body.page-replay .bookmark-toggle:focus-visible {
+  border-color: var(--primary-text);
+  color: var(--text);
+}
+
+body.page-replay .bookmark-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+body.page-replay .bookmark-toggle.is-bookmarked {
+  border-color: color-mix(in srgb, var(--primary-text) 45%, transparent);
+  color: var(--primary-text);
+}
+
+body.page-replay .bookmark-toggle.is-bookmarked svg {
+  fill: currentColor;
+}
+
+body.page-replay .bookmark-toggle-remove {
+  padding: 4px 10px;
+}
+
+/* Saved questions panel: keep session labels and controls tidy on narrow
+ * screens without changing the shared history-list layout. */
+@media (max-width: 560px) {
+  body.page-replay .bookmark-toggle {
+    gap: 4px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  body.page-replay #saved .history-item {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  body.page-replay #saved .history-item-score {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

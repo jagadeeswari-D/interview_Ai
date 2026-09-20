@@ -49,6 +49,29 @@ def _with_schema(text, task):
     )
 
 
+def _preset_company_fields(inputs):
+    """Bounded allowlisted company fields for a prompt, or None.
+
+    Mirrors the optional company block used by `build_generate_question`:
+    context is only ever appended when `company` is a dict with a non-empty
+    `name` (composed server-side from `company_context_for`), so the base
+    prompt text stays byte-for-byte identical whenever General / No Company
+    is selected.
+    """
+    company = inputs.get("company")
+    if not isinstance(company, dict):
+        return None
+    name = str(company.get("name") or "").strip()
+    if not name:
+        return None
+    context = str(company.get("context") or "").strip()
+    focus = [
+        str(item) for item in (company.get("focus_areas") or [])
+        if str(item).strip()
+    ]
+    return name, context, focus
+
+
 # ---------------------------------------------------------------------------
 # Task templates
 # ---------------------------------------------------------------------------
@@ -61,6 +84,30 @@ def build_generate_question(inputs):
         f"Set question_type to one of: conceptual, practical, behavioral, "
         f"scenario. List 2-4 concepts a strong answer should cover."
     )
+    # Company Presets (Phase 10 / Stage 1): when a validated preset context is
+    # provided it is appended as bounded, static prep context. It is composed
+    # only from `company_context_for` (allowlisted fields, never user text) and
+    # is optional, so pre-Phase-10 prompts are byte-for-byte unchanged.
+    company = inputs.get("company")
+    if isinstance(company, dict) and (company.get("name") or "").strip():
+        name = str(company["name"]).strip()
+        context = str(company.get("context") or "").strip()
+        focus = [str(item) for item in (company.get("focus_areas") or []) if str(item).strip()]
+        text += (
+            f"\nCompany context: the candidate is preparing for an interview "
+            f"at {name}, {context}."
+        )
+        if focus:
+            text += (
+                " Weave in these focus areas where relevant: "
+                + ", ".join(focus)
+                + "."
+            )
+        text += (
+            "\nThis is simulated preparation practice only — ask questions "
+            "about the role and topic above; do not reproduce or claim any "
+            "official or proprietary interview questions."
+        )
     return Prompt(system=COACH_SYSTEM, user=_with_schema(text, "generate_question"))
 
 
@@ -106,6 +153,25 @@ def build_generate_follow_up(inputs):
             "\nEarlier in this same interview (for coherence only):\n"
             + "\n".join(lines)
         )
+    # Company Presets (Stage 16): same bounded static context as question
+    # generation — an additional signal that only steers the follow-up the
+    # candidate's own mention already opened, never replacing it.
+    fields = _preset_company_fields(inputs)
+    if fields is not None:
+        name, context, focus = fields
+        text += (
+            f"\nCompany context: the candidate is preparing for an interview "
+            f"at {name}, {context}."
+        )
+        if focus:
+            text += (
+                " Where the candidate's mention allows, steer the follow-up "
+                "toward: " + ", ".join(focus) + "."
+            )
+        text += (
+            "\nThis is simulated preparation practice only — never reproduce "
+            "or claim official or proprietary interview questions."
+        )
     return Prompt(system=COACH_SYSTEM, user=_with_schema(text, "generate_follow_up"))
 
 
@@ -122,6 +188,27 @@ def build_evaluate_answer(inputs):
         f"Give specific feedback, list the missing points a strong answer would "
         f"have included, and provide a model answer."
     )
+    # Company Presets (Stage 16): allows the selected company's emphasis to
+    # shape how relevance/completeness are judged, without touching the fixed
+    # five-dimension rubric or score ranges.
+    fields = _preset_company_fields(inputs)
+    if fields is not None:
+        name, context, focus = fields
+        text += (
+            f"\nCompany context: the candidate is preparing for an interview "
+            f"at {name}, {context}."
+        )
+        if focus:
+            text += (
+                " Weight these focus areas when judging relevance and "
+                "completeness: " + ", ".join(focus) + "."
+            )
+        text += (
+            "\nKeep the five scoring dimensions and 0-100 ranges unchanged. "
+            "This is simulated preparation practice only — evaluate against "
+            "the role, topic and dimensions above; do not invent company-"
+            "specific or proprietary criteria."
+        )
     return Prompt(system=COACH_SYSTEM, user=_with_schema(text, "evaluate_answer"))
 
 
@@ -149,6 +236,21 @@ def build_generate_roadmap(inputs):
         f"clear practice focus. Start with the most foundational skill and "
         f"progress in dependency order."
     )
+    # Company Presets (Stage 16): lets a selected company's emphasis nudge
+    # learning priorities, but the plan stays a genuine day-by-day plan driven
+    # by the candidate's actual weak skills.
+    fields = _preset_company_fields(inputs)
+    if fields is not None:
+        name, context, focus = fields
+        text += (
+            f"\nCompany context: the candidate is preparing for interviews at "
+            f"{name}, {context}."
+        )
+        if focus:
+            text += (
+                " Where relevant to the weak skills above, give learning "
+                "priority to: " + ", ".join(focus) + "."
+            )
     return Prompt(system=COACH_SYSTEM, user=_with_schema(text, "generate_roadmap"))
 
 

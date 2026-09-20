@@ -64,7 +64,21 @@
     });
   }
 
+  /* Meter fills (e.g. score bars) are rendered with a data-fill percentage
+     and applied here via the CSSOM, which is allowed by the strict CSP
+     (style-src 'self' blocks inline style="" attributes). */
+  function initMeterFills() {
+    var fills = document.querySelectorAll("[data-fill]");
+    Array.prototype.forEach.call(fills, function (el) {
+      var value = parseInt(el.getAttribute("data-fill"), 10);
+      if (!isNaN(value)) {
+        el.style.width = Math.max(0, Math.min(100, value)) + "%";
+      }
+    });
+  }
+
   initSidebar();
   initThemeToggle();
   initAlerts();
+  initMeterFills();
 })();

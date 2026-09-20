@@ -1,79 +1,122 @@
 {% extends "base.html" %}
 {% block title %}Profile — InterviewIQ{% endblock %}
+{% block body_class %}page-profile{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
 
 {% block content %}
-<header class="page-header">
-  <h1 class="page-title">Your profile</h1>
-  <p class="page-subtitle">
-    Your target role steers the questions Smart Practice and Real Interview
-    generate for you.
-  </p>
-</header>
+<div class="iq-page">
 
-<section class="card" aria-labelledby="profile-form-title">
-  <h2 class="card-title" id="profile-form-title">Personal info</h2>
-
-  <form method="post" action="{{ url_for('profile.view') }}" class="form">
-    {{ csrf_token() }}
-
-    <div class="field">
-      <label class="field-label" for="profile-name">Name</label>
-      <input class="field-input" type="text" id="profile-name" name="name"
-             value="{{ form.name }}" required minlength="2" maxlength="80">
+  <header class="iq-topbar">
+    <div class="iq-topbar-copy">
+      <h1 class="iq-greeting">Your profile</h1>
+      <p class="iq-topbar-sub">Shape how InterviewIQ coaches you.</p>
     </div>
+    <a class="iq-profile-shortcut" href="{{ url_for('settings.view') }}" aria-label="Your profile">
+      <span class="avatar iq-profile-avatar" aria-hidden="true">{{ user_initial }}</span>
+      <span class="iq-profile-shortcut-label">{{ user_name }}</span>
+    </a>
+  </header>
 
-    <div class="field">
-      <label class="field-label" for="profile-email">Email</label>
-      <input class="field-input" type="email" id="profile-email"
-             value="{{ email }}" readonly aria-readonly="true">
-      <p class="field-hint">Your login email can't be changed here.</p>
-    </div>
-
-    <hr class="soft-divider">
-
-    <h3 class="card-title">Interview targeting</h3>
-
-    <div class="field">
-      <label class="field-label" for="profile-role">Target role</label>
-      <input class="field-input" type="text" id="profile-role" name="role"
-             value="{{ form.role }}" maxlength="80"
-             placeholder="e.g. Backend Developer">
-      <p class="field-hint">
-        Sent to the AI coach when it builds your interview and practice
-        questions. Leave empty to use the default role.
+  <section class="iq-hero iq-reveal" aria-labelledby="profile-hero-title">
+    <div class="iq-hero-ambient" aria-hidden="true"></div>
+    <div class="iq-hero-content">
+      <p class="iq-hero-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Coaching setup</p>
+      <h1 class="iq-hero-title" id="profile-hero-title">Your profile</h1>
+      <p class="iq-hero-sub">
+        Your target role steers the questions Smart Practice and Real
+        Interview generate for you — and your resume powers resume-based
+        practice.
       </p>
     </div>
+  </section>
 
-    <div class="field">
-      <label class="field-label" for="profile-skills">Skills (comma separated)</label>
-      <textarea class="field-input" id="profile-skills" name="skills"
-                rows="3" placeholder="e.g. Python, SQL, REST APIs">{{ form.skills }}</textarea>
-      <p class="field-hint">
-        Up to {{ max_skills }} skills, {{ skill_max_length }} characters each.
-        Duplicates are removed automatically.
-      </p>
+  <section class="iq-panel iq-reveal" aria-labelledby="profile-form-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="profile-form-title">Personal info</h2>
+        <p class="iq-panel-sub">Your name and the login email on this account.</p>
+      </div>
     </div>
 
-    <button type="submit" class="button button-primary button-block">Save profile</button>
-  </form>
-</section>
+    <form method="post" action="{{ url_for('profile.view') }}" class="form stack-form">
+      {{ csrf_token() }}
 
-{% if saved_skills %}
-<section class="card" aria-labelledby="saved-skills-title">
-  <h2 class="card-title" id="saved-skills-title">Saved skills</h2>
-  <div class="badge-cloud">
-    {% for skill in saved_skills %}<span class="badge">{{ skill }}</span>{% endfor %}
-  </div>
-</section>
-{% endif %}
+      <div class="field">
+        <label class="field-label" for="profile-name">Name</label>
+        <input class="field-input" type="text" id="profile-name" name="name"
+               value="{{ form.name }}" required minlength="2" maxlength="80">
+      </div>
 
-<section class="card" aria-labelledby="profile-resume-title">
-  <h2 class="card-title" id="profile-resume-title">Resume</h2>
-  {% if has_resume %}
-  <p class="stat-note">A resume is on file for resume-based practice.</p>
-  {% else %}
-  <p class="stat-note">No resume uploaded yet — resume-based questions need one.</p>
+      <div class="field">
+        <label class="field-label" for="profile-email">Email</label>
+        <input class="field-input" type="email" id="profile-email"
+               value="{{ email }}" readonly aria-readonly="true">
+        <p class="field-hint">Your login email can't be changed here.</p>
+      </div>
+
+      <hr class="soft-divider">
+
+      <h3 class="iq-panel-title">Interview targeting</h3>
+
+      <div class="field">
+        <label class="field-label" for="profile-role">Target role</label>
+        <input class="field-input" type="text" id="profile-role" name="role"
+               value="{{ form.role }}" maxlength="80"
+               placeholder="e.g. Backend Developer">
+        <p class="field-hint">
+          Sent to the AI coach when it builds your interview and practice
+          questions. Leave empty to use the default role.
+        </p>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="profile-skills">Skills (comma separated)</label>
+        <textarea class="field-input" id="profile-skills" name="skills"
+                  rows="3" placeholder="e.g. Python, SQL, REST APIs">{{ form.skills }}</textarea>
+        <p class="field-hint">
+          Up to {{ max_skills }} skills, {{ skill_max_length }} characters each.
+          Duplicates are removed automatically.
+        </p>
+      </div>
+
+      <div>
+        <button type="submit" class="button button-primary button-block iq-btn iq-btn-primary">Save profile</button>
+      </div>
+    </form>
+  </section>
+
+  {% if saved_skills %}
+  <section class="iq-panel iq-reveal" aria-labelledby="saved-skills-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="saved-skills-title">Saved skills</h2>
+        <p class="iq-panel-sub">Skills the coach knows about when generating questions.</p>
+      </div>
+    </div>
+    <div class="badge-cloud">
+      {% for skill in saved_skills %}<span class="badge">{{ skill }}</span>{% endfor %}
+    </div>
+  </section>
   {% endif %}
-  <a class="button button-ghost button-small" href="{{ url_for('resume.view') }}">Open Resume Analysis</a>
-</section>
+
+  <section class="iq-panel iq-reveal" aria-labelledby="profile-resume-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="profile-resume-title">Resume</h2>
+        <p class="iq-panel-sub">
+          {% if has_resume %}A resume is on file for resume-based practice.{% else %}No resume uploaded yet — resume-based questions need one.{% endif %}
+        </p>
+      </div>
+      <a class="button button-ghost button-small iq-btn iq-btn-ghost" href="{{ url_for('resume.view') }}">Open Resume Analysis</a>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages.js') }}"></script>
 {% endblock %}

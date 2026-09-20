@@ -1,0 +1,163 @@
+/* ==========================================================================
+   InterviewIQ — Shared theme tokens for the authenticated product area.
+   --------------------------------------------------------------------------
+   The product shell (Dashboard, Roadmap, Smart Practice, Real Interview,
+   History, Replay, Resume, Analytics, Reports, Profile, Settings and error
+   pages) shares ONE visual identity: near-black glass + electric #7C8CFF in
+   dark, and a refined cool off-white + indigo system in light.
+
+   Every page previously re-declared this identical token block in its own
+   stylesheet. Those duplicates were removed and consolidated HERE so the two
+   themes live in a single place: change a token once and every page follows.
+   Both themes expose the same semantic channel:
+     --bg / --bg-elevated / --bg-inset / --sidebar-bg
+     --text / --text-secondary / --text-muted
+     --border / --border-strong / --input-border / --input-bg / --placeholder
+     --primary* / --success / --warning / --danger / --info + soft variants
+     --active-bg / --hover-bg
+     --chart-*            (grid, axis text, tooltip surface)
+     --glow-* / --shadow-* / --focus-ring
+
+   Dark is the primary identity and its values are untouched. Light is a
+   deliberate, premium daylight counterpart — soft off-white backdrop, crisp
+   white input surfaces, strong espresso text hierarchy and an indigo
+   accent — NOT an inversion of the dark palette.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1.  Dark palette (default). Values identical to the previous per-page
+   blocks so the existing dark theme renders exactly as before.
+   -------------------------------------------------------------------------- */
+body.page-dashboard,
+body.page-roadmap,
+body.page-practice,
+body.page-interview,
+body.page-replay,
+body.page-resume,
+body.page-analytics,
+body.page-reports,
+body.page-profile,
+body.page-settings,
+body.page-history,
+body.page-challenge,
+body.page-achievements,
+body.page-leaderboard,
+body.page-error {
+  --bg: #08090b;
+  --bg-elevated: rgba(255, 255, 255, 0.045);
+  --bg-inset: #0d0f13;
+  --sidebar-bg: rgba(11, 13, 17, 0.72);
+  --text: #f2f3f5;
+  --text-secondary: #c0c7d1;
+  --text-muted: #9aa0aa;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --input-border: rgba(255, 255, 255, 0.14);
+  --input-bg: #0d0f13;
+  --placeholder: #777c84;
+  --primary: #7c8cff;
+  --primary-hover: #93a0ff;
+  --primary-text: #7c8cff;
+  --primary-text-hover: #9da9ff;
+  --primary-contrast: #0a0b13;
+  --primary-soft: rgba(124, 140, 255, 0.15);
+  --success: #42d9a0;
+  --success-soft: rgba(66, 217, 160, 0.14);
+  --danger: #f0786f;
+  --danger-soft: rgba(240, 120, 111, 0.14);
+  --warning: #e7a84b;
+  --warning-soft: rgba(231, 168, 75, 0.15);
+  --info: #7c8cff;
+  --info-soft: rgba(124, 140, 255, 0.12);
+  --active-bg: rgba(124, 140, 255, 0.16);
+  --hover-bg: rgba(255, 255, 255, 0.06);
+  --chart-secondary: #4656d8;
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-axis-text: #9aa0aa;
+  --chart-tooltip-bg: #14181f;
+  --chart-tooltip-text: #f2f3f5;
+  --chart-tooltip-border: rgba(255, 255, 255, 0.14);
+  --glow-core: rgba(124, 140, 255, 0.5);
+  --glow-ring: rgba(124, 140, 255, 0.3);
+  --glow-ember: #7c8cff;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-lift: 0 20px 50px -30px rgba(0, 0, 0, 0.65),
+    0 0 28px -14px var(--glow-ring);
+  --focus-ring: 0 0 0 3px rgba(124, 140, 255, 0.4);
+
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* --------------------------------------------------------------------------
+   2.  Light palette — refined premium daylight system.
+   -------------------------------------------------------------------------- */
+[data-theme="light"] body.page-dashboard,
+[data-theme="light"] body.page-roadmap,
+[data-theme="light"] body.page-practice,
+[data-theme="light"] body.page-interview,
+[data-theme="light"] body.page-replay,
+[data-theme="light"] body.page-resume,
+[data-theme="light"] body.page-analytics,
+[data-theme="light"] body.page-reports,
+[data-theme="light"] body.page-profile,
+[data-theme="light"] body.page-settings,
+[data-theme="light"] body.page-history,
+[data-theme="light"] body.page-challenge,
+[data-theme="light"] body.page-achievements,
+[data-theme="light"] body.page-leaderboard,
+[data-theme="light"] body.page-error {
+  --bg: #eef1f6;
+  --bg-elevated: #fbfcfe;
+  --bg-inset: #e4e9f1;
+  --sidebar-bg: rgba(255, 255, 255, 0.82);
+  --text: #161a23;
+  --text-secondary: #3a4351;
+  --text-muted: #57616f;
+  --border: rgba(23, 30, 46, 0.12);
+  --border-strong: rgba(23, 30, 46, 0.2);
+  --input-border: rgba(23, 30, 46, 0.2);
+  --input-bg: #ffffff;
+  --placeholder: #66707f;
+  --primary: #4656d8;
+  --primary-hover: #5b6ae6;
+  --primary-text: #3a49c8;
+  --primary-text-hover: #2b3ab5;
+  --primary-contrast: #ffffff;
+  --primary-soft: rgba(70, 86, 216, 0.12);
+  --success: #0f7a57;
+  --success-soft: rgba(15, 122, 87, 0.12);
+  --danger: #c0454e;
+  --danger-soft: rgba(192, 69, 78, 0.12);
+  --warning: #a86a14;
+  --warning-soft: rgba(168, 106, 20, 0.14);
+  --info: #4656d8;
+  --info-soft: rgba(70, 86, 216, 0.1);
+  --active-bg: rgba(70, 86, 216, 0.12);
+  --hover-bg: rgba(23, 30, 46, 0.06);
+  --chart-secondary: #4656d8;
+  --chart-grid: rgba(23, 30, 46, 0.09);
+  --chart-axis-text: #57616f;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-text: #161a23;
+  --chart-tooltip-border: rgba(70, 86, 216, 0.22);
+  --glow-core: rgba(70, 86, 216, 0.34);
+  --glow-ring: rgba(70, 86, 216, 0.22);
+  --glow-ember: #4656d8;
+  --shadow-soft: 0 1px 2px rgba(20, 26, 44, 0.06),
+    0 2px 10px -3px rgba(20, 26, 44, 0.06);
+  --shadow-lift: 0 24px 60px -28px rgba(26, 36, 64, 0.38),
+    0 0 26px -14px var(--glow-ring);
+  --focus-ring: 0 0 0 3px rgba(70, 86, 216, 0.32);
+
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* The Roadmap page's ambient dark lift was originally deeper than the shared
+   product default (0 22px 54px / 0 30px spreads). Preserve that exact dark
+   value; the light roadmap uses the shared lift above. */
+body.page-roadmap {
+  --shadow-lift: 0 22px 54px -30px rgba(0, 0, 0, 0.65),
+    0 0 30px -14px var(--glow-ring);
+}

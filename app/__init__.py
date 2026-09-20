@@ -51,10 +51,13 @@ def create_app(config_object=None):
 
     # Blueprints.
     from .ai.routes import ai_bp
+    from .achievements import achievements_bp
     from .analytics import analytics_bp
     from .auth import auth_bp
+    from .challenge import challenge_bp
     from .history import history_bp
     from .interview import interview_bp
+    from .leaderboard import leaderboard_bp
     from .main import main_bp
     from .practice import practice_bp
     from .profile import profile_bp
@@ -62,12 +65,16 @@ def create_app(config_object=None):
     from .replay import replay_bp
     from .resume import resume_bp
     from .roadmap import roadmap_bp
+    from .settings import settings_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(ai_bp)
+    app.register_blueprint(challenge_bp)
+    app.register_blueprint(achievements_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(practice_bp)
     app.register_blueprint(interview_bp)
+    app.register_blueprint(leaderboard_bp)
     app.register_blueprint(history_bp)
     app.register_blueprint(replay_bp)
     app.register_blueprint(roadmap_bp)
@@ -75,12 +82,26 @@ def create_app(config_object=None):
     app.register_blueprint(resume_bp)
     app.register_blueprint(reports_bp)
     app.register_blueprint(profile_bp)
+    app.register_blueprint(settings_bp)
 
     # Load the authenticated user for every request.
     @app.before_request
     def load_user():
         user_id = session.get("user_id")
         g.user = get_user_by_id(user_id) if user_id else None
+
+    # Naming context for authenticated pages: Dashboard and Settings already
+    # pass user_name/user_initial individually; expose the same values to
+    # every template (used by the topbar profile shortcut on product pages).
+    @app.context_processor
+    def inject_user_context():
+        user = getattr(g, "user", None)
+        name = (user["name"] if user is not None else "") or ""
+        name = name.strip()
+        return {
+            "user_name": name,
+            "user_initial": (name[:1] or "U").upper(),
+        }
 
     _init_error_handlers(app)
     return app

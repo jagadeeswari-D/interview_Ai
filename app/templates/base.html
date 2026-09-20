@@ -5,8 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="InterviewIQ — AI-powered mock interview practice for students and fresh graduates.">
   <title>{% block title %}InterviewIQ{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  {% if g.user %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">{% endif %}
+  {% block styles %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   {% if g.user %}
@@ -25,16 +29,22 @@
         <span class="nav-section-label">Practice</span>
         <a href="{{ url_for('practice.pick') }}"
            class="nav-link {{ 'active' if active_page == 'practice' }}">Smart Practice</a>
+        <a href="{{ url_for('challenge.view') }}"
+           class="nav-link {{ 'active' if active_page == 'challenge' }}">Today's Challenge</a>
         <a href="{{ url_for('interview.config') }}"
            class="nav-link {{ 'active' if active_page == 'interview' }}">Real Interview</a>
 
         <span class="nav-section-label">Progress</span>
+        <a href="{{ url_for('roadmap.view') }}"
+           class="nav-link {{ 'active' if active_page == 'roadmap' }}">Roadmap</a>
+        <a href="{{ url_for('achievements.view') }}"
+           class="nav-link {{ 'active' if active_page == 'achievements' }}">Achievements</a>
+        <a href="{{ url_for('leaderboard.view') }}"
+           class="nav-link {{ 'active' if active_page == 'leaderboard' }}">Leaderboard</a>
         <a href="{{ url_for('history.list_view') }}"
            class="nav-link {{ 'active' if active_page == 'history' }}">Interview History</a>
         <a href="{{ url_for('replay.index') }}"
            class="nav-link {{ 'active' if active_page == 'replay' }}">Interview Replay</a>
-        <a href="{{ url_for('roadmap.view') }}"
-           class="nav-link {{ 'active' if active_page == 'roadmap' }}">Learning Roadmap</a>
         <a href="{{ url_for('resume.view') }}"
            class="nav-link {{ 'active' if active_page == 'resume' }}">Resume Analysis</a>
         <a href="{{ url_for('analytics.view') }}"
@@ -45,15 +55,17 @@
         <span class="nav-section-label">Account</span>
         <a href="{{ url_for('profile.view') }}"
            class="nav-link {{ 'active' if active_page == 'profile' }}">Profile</a>
-        <a class="nav-link is-disabled" href="#" aria-disabled="true">Settings <span class="soon-badge">Soon</span></a>
+        <a href="{{ url_for('settings.view') }}"
+           class="nav-link {{ 'active' if active_page == 'settings' }}">Settings</a>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-chip" title="{{ g.user.email }}">
+        <a class="user-chip" href="{{ url_for('settings.view') }}" title="{{ g.user.email }}">
           <span class="avatar" aria-hidden="true">{{ g.user.name[:1] | upper }}</span>
           <span class="user-chip-name">{{ g.user.name }}</span>
-        </div>
+        </a>
         <div class="sidebar-actions">
+          <a class="button button-ghost button-small" href="{{ url_for('settings.view') }}">Settings</a>
           <form method="post" action="{{ url_for('auth.logout') }}">
             {{ csrf_token() }}
             <button type="submit" class="button button-ghost button-small">Log out</button>

@@ -1,0 +1,766 @@
+/* ==========================================================================
+   InterviewIQ — Interview History (product polish).
+   Scoped under body.page-history so Replay / Reports (which share the
+   .history-item family from pages.css) are untouched.
+   Rides on top of pages.css: the Dashboard identity tokens (near-black
+   glass, electric #7C8CFF accent, hairlines) are already applied to this
+   page, so every value here uses theme tokens and dark + light both render
+   correctly. No inline styles or inline scripts — the strict CSP stays
+   intact.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1.  Mode filters — pill chips (previously rendered unstyled).
+   -------------------------------------------------------------------------- */
+body.page-history .iq-topbar-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--primary-text);
+}
+
+body.page-history .history-filter {
+  margin-bottom: 0;
+}
+
+body.page-history .iq-history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+body.page-history .iq-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-inset);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease,
+    color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+body.page-history .iq-filter-chip:hover {
+  color: var(--text);
+  border-color: var(--primary-text);
+  background: var(--bg-elevated);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+body.page-history .iq-filter-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+body.page-history .iq-filter-chip.is-active {
+  background: linear-gradient(135deg, var(--primary), #9b6cff);
+  border-color: transparent;
+  color: var(--primary-contrast);
+  box-shadow: 0 12px 26px -12px var(--glow-core);
+}
+
+/* --------------------------------------------------------------------------
+   1.5  Search + advanced filters — same design language as the chips.
+   -------------------------------------------------------------------------- */
+body.page-history .iq-history-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-2) var(--spacing-3);
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--border);
+}
+
+body.page-history .iq-search-field {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 200px;
+  max-width: 420px;
+}
+
+body.page-history .iq-search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+body.page-history .iq-search-input {
+  width: 100%;
+  padding: 9px 36px 9px 38px;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  background: var(--input-bg, var(--bg-inset));
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+
+body.page-history .iq-search-input::placeholder {
+  color: var(--placeholder, var(--text-muted));
+  opacity: 1;
+}
+
+body.page-history .iq-search-input:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+body.page-history .iq-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+body.page-history .iq-search-clear:hover {
+  color: var(--text);
+  background: var(--bg-inset);
+}
+
+body.page-history .iq-search-clear:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+body.page-history .iq-search-clear svg {
+  width: 12px;
+  height: 12px;
+}
+
+body.page-history .iq-filter-select-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+body.page-history .iq-filter-select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color 0.15s ease;
+}
+
+body.page-history .iq-filter-select-wrap:hover::after {
+  border-color: var(--text);
+}
+
+body.page-history .iq-filter-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 9px 34px 9px 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  background: var(--input-bg, var(--bg-inset));
+  color: var(--text);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+
+body.page-history .iq-filter-select option {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+body.page-history .iq-filter-select:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+body.page-history .iq-date-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.page-history .iq-date-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+body.page-history .iq-date-input {
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg, var(--bg-inset));
+  color: var(--text);
+  font: inherit;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+
+body.page-history .iq-date-input:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+body.page-history .iq-filter-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-left: auto;
+}
+
+body.page-history .iq-history-apply {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--primary), #9b6cff);
+  color: var(--primary-contrast);
+  font-weight: 700;
+  transition: box-shadow 0.18s ease, filter 0.18s ease, transform 0.18s ease;
+}
+
+body.page-history .iq-history-apply:hover {
+  box-shadow: 0 12px 26px -12px var(--glow-core);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+body.page-history .iq-history-apply:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring), 0 12px 26px -12px var(--glow-core);
+}
+
+body.page-history .iq-history-clear {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   2.  Interview memory — tiles become inset glass cards.
+   -------------------------------------------------------------------------- */
+body.page-history .memory-grid .stat-tile {
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--bg-inset);
+  padding: var(--spacing-4);
+  transition: transform 0.22s ease, border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+body.page-history .memory-grid .stat-tile:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--primary-text) 35%, transparent);
+  box-shadow: var(--shadow-lift);
+}
+
+body.page-history .memory-grid .stat-label {
+  letter-spacing: 0.06em;
+}
+
+body.page-history .memory-grid .badge {
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   3.  Session list — divider rows become tappable glass cards.
+   -------------------------------------------------------------------------- */
+body.page-history .history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+body.page-history .history-item {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--bg-inset);
+  padding: var(--spacing-4);
+  transition: background-color 0.22s ease, border-color 0.22s ease,
+    transform 0.22s ease, box-shadow 0.22s ease;
+  animation: iq-history-rise 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+body.page-history .history-item:first-child {
+  border-top: 1px solid var(--border);
+  padding-top: var(--spacing-4);
+}
+
+body.page-history .history-item:nth-child(2) { animation-delay: 45ms; }
+body.page-history .history-item:nth-child(3) { animation-delay: 90ms; }
+body.page-history .history-item:nth-child(4) { animation-delay: 135ms; }
+body.page-history .history-item:nth-child(5) { animation-delay: 180ms; }
+body.page-history .history-item:nth-child(6) { animation-delay: 225ms; }
+
+body.page-history .history-item:hover {
+  transform: translateY(-2px);
+  background: var(--bg-elevated);
+  border-color: color-mix(in srgb, var(--primary-text) 40%, transparent);
+  box-shadow: var(--shadow-lift);
+}
+
+@keyframes iq-history-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mode icon bubble (chat/mic) */
+body.page-history .history-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+body.page-history .history-item:hover .history-item-icon {
+  transform: scale(1.04);
+  box-shadow: 0 0 20px -8px var(--glow-core);
+}
+
+body.page-history .history-item-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Title + meta */
+body.page-history .history-item-link {
+  font-size: 1.02rem;
+  color: var(--text);
+}
+
+body.page-history .history-item-link:hover {
+  color: var(--primary-text);
+}
+
+body.page-history .history-item-meta {
+  margin-bottom: 0;
+}
+
+body.page-history .history-item-meta .badge {
+  font-weight: 600;
+}
+
+/* Score + actions */
+body.page-history .history-item-score {
+  align-items: flex-end;
+  gap: 6px;
+}
+
+body.page-history .history-item-score .interview-score-badge {
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 4px 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+body.page-history .history-item-score .button-ghost {
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  transition: border-color 0.18s ease, color 0.18s ease,
+    transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.page-history .history-item-score .button-ghost:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -12px var(--glow-core);
+}
+
+/* --------------------------------------------------------------------------
+   4.  Empty state — ringed dashboard-style graphic, centered actions.
+   -------------------------------------------------------------------------- */
+body.page-history .empty-state {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-inset);
+  border: 1px dashed color-mix(in srgb, var(--border) 85%, transparent);
+  border-radius: calc(var(--radius) + 4px);
+  padding: var(--spacing-6) var(--spacing-4);
+}
+
+body.page-history .empty-state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary-soft) 40%, transparent),
+    0 14px 34px -14px var(--glow-core);
+}
+
+body.page-history .empty-state-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+body.page-history .empty-state .quick-actions {
+  max-width: 320px;
+  margin: var(--spacing-5) auto 0;
+}
+
+/* --------------------------------------------------------------------------
+   5.  Detail view — result summary & per-question review cards.
+   -------------------------------------------------------------------------- */
+body.page-history .interview-result-summary .score-overall {
+  align-items: flex-start;
+  padding-right: var(--spacing-6);
+  border-right: 1px solid var(--border);
+}
+
+body.page-history .interview-result-summary .score-overall .stat-value {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--text);
+  text-shadow: 0 0 32px var(--glow-ring);
+}
+
+body.page-history .interview-result-summary .score-overall .stat-value .score-denominator {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+body.page-history .interview-result-summary .score-list {
+  min-width: 260px;
+}
+
+body.page-history .interview-result-summary .meter {
+  height: 9px;
+}
+
+body.page-history .interview-result-summary .meter-fill {
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.page-history .interview-result-summary .meter-fill.meter-high {
+  background: linear-gradient(90deg, var(--success), var(--primary-hover));
+}
+
+body.page-history .interview-result-summary .meter-fill.meter-mid {
+  background: linear-gradient(90deg, var(--warning), var(--primary-hover));
+}
+
+body.page-history .interview-result-summary .meter-fill.meter-low {
+  background: linear-gradient(90deg, var(--danger), var(--primary-hover));
+}
+
+/* Per-question review cards */
+body.page-history .interview-review-card .question-meta .badge:first-child {
+  background: linear-gradient(135deg, var(--primary), #9b6cff);
+  border-color: transparent;
+  color: var(--primary-contrast);
+  font-weight: 700;
+}
+
+body.page-history .interview-review-card .question-text {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   6.  Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  body.page-history .iq-panel-head-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  body.page-history .iq-history-filters {
+    justify-content: flex-start;
+  }
+
+  body.page-history .iq-search-field {
+    max-width: none;
+    flex-basis: 100%;
+  }
+
+  body.page-history .iq-filter-actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  body.page-history .history-item {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+
+  body.page-history .history-item:first-child {
+    padding-top: var(--spacing-3);
+  }
+
+  body.page-history .history-item-score {
+    flex-basis: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--spacing-2) var(--spacing-3);
+  }
+
+  body.page-history .history-item-score .button-ghost {
+    margin-left: auto;
+  }
+
+  body.page-history .interview-result-summary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.page-history .interview-result-summary .score-overall {
+    padding-right: 0;
+    border-right: none;
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 560px) {
+  body.page-history .history-item-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  body.page-history .history-item-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  body.page-history .iq-filter-chip {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  body.page-history .score-item {
+    grid-template-columns: 124px 1fr 30px;
+    gap: var(--spacing-2);
+  }
+
+  body.page-history .memory-grid {
+    gap: var(--spacing-3);
+  }
+
+  body.page-history .iq-history-controls {
+    align-items: stretch;
+    gap: var(--spacing-3);
+  }
+
+  body.page-history .iq-search-field {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+
+  body.page-history .iq-filter-select-wrap {
+    flex: 1 1 160px;
+  }
+
+  body.page-history .iq-date-range {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+
+  body.page-history .iq-date-input {
+    flex: 1 1 120px;
+  }
+
+  body.page-history .iq-filter-actions {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+
+  body.page-history .iq-history-clear {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 400px) {
+  body.page-history .history-item-score {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  body.page-history .history-item-score .button-ghost {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7.  Reduced motion — page-level reveal falls back instantly; the global
+       reduce rule in style.css already neutralizes animations/transitions.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  body.page-history .history-item {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8.  Performance comparison (History detail) — compact, comparability-aware
+       comparison of this session against the previous comparable one. Reuses
+       theme tokens so dark + light both render correctly; no inline styles.
+   -------------------------------------------------------------------------- */
+body.page-history .compare-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-3, 12px);
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+body.page-history .compare-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+}
+
+body.page-history .compare-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+body.page-history .compare-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+body.page-history .compare-delta {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-muted);
+}
+
+body.page-history .compare-delta.is-up {
+  color: var(--success);
+}
+
+body.page-history .compare-delta.is-down {
+  color: var(--danger);
+}
+
+body.page-history .compare-delta.is-flat {
+  color: var(--text-muted);
+}
+
+body.page-history .compare-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 var(--spacing-3, 12px);
+  padding: 0;
+  list-style: none;
+}
+
+body.page-history .compare-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated, var(--bg-inset));
+}
+
+body.page-history .compare-row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+body.page-history .compare-row-values {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+body.page-history .compare-row .compare-delta {
+  min-width: 3.5ch;
+  text-align: right;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 560px) {
+  body.page-history .compare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-history .compare-row {
+    flex-wrap: wrap;
+  }
+
+  body.page-history .compare-row-values {
+    flex: 1 1 auto;
+    text-align: right;
+  }
+}

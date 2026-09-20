@@ -322,16 +322,6 @@ def _role_for_user():
     return (profile["role"] if profile else "").strip() or DEFAULT_ROLE
 
 
-def _save_resume_path(user_id, data):
-    """Persist the PDF outside the web root under a fixed filename."""
-    directory = current_app.config["RESUME_UPLOAD_DIR"]
-    os.makedirs(directory, exist_ok=True)
-    path = os.path.join(directory, f"{g.user['id']}.pdf")
-    with open(path, "wb") as handle:
-        handle.write(data)
-    return path
-
-
 def _stored_resume_path(profile):
     """Absolute path of this user's stored resume, or None if unusable."""
     if profile is None or not profile["resume_path"]:

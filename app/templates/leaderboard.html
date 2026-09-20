@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — InterviewIQ{% endblock %}
+{% block body_class %}page-leaderboard{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/leaderboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="iq-page lb-flow">
+
+  <!-- HERO -->
+  <section class="iq-hero iq-reveal" aria-labelledby="lb-hero-title">
+    <div class="iq-hero-ambient" aria-hidden="true"></div>
+    <div class="iq-hero-content">
+      <p class="iq-hero-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Leaderboard</p>
+      <h1 class="iq-hero-title" id="lb-hero-title">Top learners by XP</h1>
+      <p class="iq-hero-sub">
+        Ranked by lifetime XP earned from Smart Practice, Real Interviews and
+        Daily Challenges. Only your public name and XP are shown to others.
+        Your row is highlighted in indigo.
+      </p>
+    </div>
+  </section>
+
+  <!-- YOUR POSITION -->
+  <section class="lb-self iq-reveal" aria-label="Your leaderboard position">
+    {% if own_rank %}
+      <span class="lb-self-rank" aria-hidden="true">#{{ own_rank }}</span>
+      <span class="lb-self-copy">
+        <span class="lb-self-label">Your rank</span>
+        <span class="lb-self-xp">{{ own_xp }} XP earned</span>
+      </span>
+    {% else %}
+      <span class="lb-self-rank is-idle" aria-hidden="true">—</span>
+      <span class="lb-self-copy">
+        <span class="lb-self-label">You're not on the board yet</span>
+        <span class="lb-self-xp">Earn XP with practice, interviews or today's challenge to appear.</span>
+      </span>
+    {% endif %}
+  </section>
+
+  <!-- RANKINGS -->
+  <section class="iq-panel iq-reveal" aria-labelledby="lb-list-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="lb-list-title">Top {{ limit }} players</h2>
+        <p class="iq-panel-sub">
+          {% if participant_count %}
+          {{ participant_count }} active {{ 'learner' if participant_count == 1 else 'learners' }} ranked by lifetime XP.
+          {% else %}
+          No XP has been earned yet.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    {% if entries %}
+    <ol class="le-list">
+      {% for entry in entries %}
+      <li class="le-row {{ 'is-self' if entry.is_self }}">
+        <span class="le-rank">{{ entry.rank }}</span>
+        <span class="le-player">
+          <span class="le-avatar" aria-hidden="true">{{ entry.name[:1] | upper }}</span>
+          <span class="le-name">{{ entry.name }}</span>
+          {% if entry.is_self %}<span class="le-you">You</span>{% endif %}
+        </span>
+        <span class="le-xp">{{ entry.total_xp }}<span class="le-xp-unit">XP</span></span>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p class="le-empty">Be the first — complete a practice question to earn your first XP.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages.js') }}"></script>
+{% endblock %}

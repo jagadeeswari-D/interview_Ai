@@ -29,6 +29,14 @@ from .ai.errors import (
     GeminiRateLimitError,
 )
 from .auth import login_required
+from .achievements import evaluate_achievements
+from .company_presets import (
+    GENERAL_KEY,
+    company_context_for,
+    company_preset_by_key,
+    company_select_options,
+    resolve_company_key,
+)
 from .evaluation import SCORE_DIMENSIONS, evaluate_answer, store_evaluation
 from .memory import on_interview_completed
 from .models import (
@@ -41,6 +49,7 @@ from .models import (
     set_interview_status,
 )
 from .ratelimit import check_gemini_limit
+from . import xp
 
 practice_bp = Blueprint("practice", __name__)
 
@@ -87,6 +96,8 @@ def pick():
         difficulties=DIFFICULTIES,
         prefill_topic=topic,
         prefill_difficulty=difficulty,
+        companies=company_select_options(),
+        selected_company=GENERAL_KEY,
     )
 
 
@@ -123,13 +134,26 @@ def new_question():
         ):
             abort(404)
 
+    # Company Presets (Phase 10 / Stage 1): validate the submitted key server-
+    # side against the static allowlist before it can reach Gemini or the
+    # database. Blank/"general" -> General (None); any unlisted value (free
+    # text, tampered keys) is rejected outright. A continued session with a
+    # blank field inherits its stored company key.
+    try:
+        company_key, company_preset = resolve_company_key(
+            request.form.get("company"), interview
+        )
+    except ValueError:
+        flash("Choose a valid company context.", "error")
+        return redirect(url_for("practice.pick"))
+
     role = _role_for_user()
     service = current_app.extensions["gemini"]
     try:
-        payload = service.generate(
-            "generate_question",
-            {"role": role, "topic": topic, "difficulty": difficulty},
-        )
+        inputs = {"role": role, "topic": topic, "difficulty": difficulty}
+        if company_preset is not None:
+            inputs["company"] = company_context_for(company_preset)
+        payload = service.generate("generate_question", inputs)
     except GeminiConfigError:
         flash(
             "AI features are not configured yet. Ask an operator to set the "
@@ -153,7 +177,9 @@ def new_question():
         return redirect(url_for("practice.pick"))
 
     if interview is None:
-        interview = create_practice_interview(g.user["id"], role, difficulty, topic)
+        interview = create_practice_interview(
+            g.user["id"], role, difficulty, topic, company_key=company_key
+        )
 
     question_id = add_question(
         interview["id"],
@@ -176,6 +202,9 @@ def question_view(question_id):
 
     concepts = json.loads(row["expected_concepts"] or "[]")
     answer = get_answer(question_id)
+    company_preset = (
+        company_preset_by_key(row["company_key"]) if row["company_key"] else None
+    )
     return render_template(
         "practice.html",
         active_page="practice",
@@ -184,6 +213,7 @@ def question_view(question_id):
         concepts=concepts,
         answer=answer,
         dimensions=SCORE_DIMENSIONS,
+        company_preset=company_preset,
     )
 
 
@@ -213,9 +243,21 @@ def submit_answer():
 
     concepts = json.loads(row["expected_concepts"] or "[]")
     service = current_app.extensions["gemini"]
+    # Company Presets (Stage 16): the evaluation carries the company context
+    # of the SESSION the question belongs to (persisted allowlisted key from
+    # the interview row) — never anything the browser submits at answer time.
+    company_preset = (
+        company_preset_by_key(row["company_key"]) if row["company_key"] else None
+    )
     try:
-        evaluation = evaluate_answer(service, row["question"], answer_text,
-                                     concepts)
+        if company_preset is not None:
+            evaluation = evaluate_answer(
+                service, row["question"], answer_text, concepts,
+                company=company_context_for(company_preset),
+            )
+        else:
+            evaluation = evaluate_answer(
+                service, row["question"], answer_text, concepts)
     except GeminiConfigError:
         flash(
             "AI features are not configured yet. Ask an operator to set the "
@@ -238,7 +280,7 @@ def submit_answer():
         )
         return redirect(url_for("practice.question_view", question_id=question_id))
 
-    overall, _ = store_evaluation(
+    inserted, overall, _ = store_evaluation(
         question_id,
         answer_text,
         evaluation,
@@ -246,6 +288,10 @@ def submit_answer():
         skill_label=row["topic"],
         interview_id=row["interview_id"],
     )
+    if not inserted:
+        # A duplicate submission raced ahead and already stored this answer:
+        # do not complete the session or aggregate this evaluation again.
+        return redirect(url_for("practice.question_view", question_id=question_id))
     set_interview_status(row["interview_id"], "completed", overall_score=overall)
 
     # Stage 4 (blueprint B.7/K.8): aggregate THIS answer into Weaknesses and
@@ -261,6 +307,15 @@ def submit_answer():
         }],
     )
 
+    evaluate_achievements(g.user["id"])
+
+    # Stage 14: award XP only for this newly graded practice question. The
+    # ledger's UNIQUE(user_id, source, event_key) makes a retried/duplicate
+    # submission unable to award the same question twice.
+    xp.award(g.user["id"], xp.SRC_PRACTICE_ANSWER, question_id,
+             xp.XP_PRACTICE_ANSWER)
+    xp.award_achievement_bonuses(g.user["id"])
+
     return redirect(url_for("practice.question_view", question_id=question_id))
 
 
@@ -271,6 +326,11 @@ def submit_answer():
 def _owned_question(question_id):
     row = get_question_with_interview(question_id)
     if row is None or row["user_id"] != g.user["id"]:
+        return None
+    # The practice endpoints must never operate on a Real Interview question:
+    # those paths would leak hints/evaluation before the interview completes
+    # and could finish a timed session early (bypassing the timer/limits).
+    if row["mode"] != "practice":
         return None
     return row
 

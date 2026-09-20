@@ -204,7 +204,7 @@ def build_report_pdf(interview, candidate_name, type_label, transcript,
         )
         story.append(Paragraph(
             f"Question {index}"
-            + (f" ({row['question_type']})" if row["question_type"] else "")
+            + (f" ({_escape(row['question_type'])})" if row["question_type"] else "")
             + score_label,
             styles["question"],
         ))

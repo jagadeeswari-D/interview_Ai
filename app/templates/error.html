@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ code }} — InterviewIQ{% endblock %}
+{% block body_class %}page-error{% endblock %}
 
 {# Error pages must render for anonymous visitors too, so both base-layout
    blocks carry the same card (base.html uses different blocks per layout). #}

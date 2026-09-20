@@ -1,0 +1,115 @@
+/* InterviewIQ — Personal Notes (Replay walkthrough).
+ * Compact private-note box under each question. Scoped to the Replay page;
+ * reuses global theme tokens and button classes. Strict CSP: no inline
+ * styles or scripts — save/clear are native form posts, the Saved/Unsaved
+ * indicator is driven by notes.js.
+ */
+body.page-replay .personal-note {
+  margin: var(--spacing-4, 20px) 0 var(--spacing-5, 28px);
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary-text);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+}
+
+body.page-replay .personal-note-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.page-replay .personal-note-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+body.page-replay .personal-note-privacy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+body.page-replay .personal-note-privacy svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.page-replay .personal-note-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.page-replay .personal-note-input::placeholder {
+  color: var(--placeholder, var(--text-muted));
+  opacity: 1;
+}
+
+body.page-replay .personal-note-input:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+body.page-replay .personal-note-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 10px;
+}
+
+body.page-replay .personal-note-state {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+body.page-replay .personal-note-state.is-unsaved {
+  color: var(--warning);
+}
+
+body.page-replay .personal-note-hint {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+body.page-replay .personal-note-actions {
+  display: inline-flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 560px) {
+  body.page-replay .personal-note-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  body.page-replay .personal-note-actions .button {
+    flex: 1;
+  }
+}

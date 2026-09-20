@@ -1,212 +1,445 @@
 {% extends "base.html" %}
 {% block title %}Interview History — InterviewIQ{% endblock %}
+{% block body_class %}page-history{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+{% endblock %}
 
 {% block content %}
 
 {% if view == 'list' %}
-<header class="page-header">
-  <h1 class="page-title">Interview History</h1>
-  <p class="page-subtitle">
-    Every completed practice session and real interview, with full feedback.
-  </p>
-</header>
+<div class="iq-page">
 
-<section class="card" aria-label="Detected strengths and weaknesses">
-  <h2 class="card-title">Interview memory</h2>
-  {% if memory and (memory.weak_topics or memory.repeated_mistakes or memory.strong_topics) %}
-  <div class="stat-grid memory-grid">
-    <div class="stat-tile">
-      <span class="stat-label">Weak topics</span>
-      {% if memory.weak_topics %}
-      <span class="memory-topics">
-        {% for skill in memory.weak_topics %}<span class="badge">{{ skill }}</span>{% endfor %}
-      </span>
-      {% else %}<span class="stat-value">&mdash;</span>{% endif %}
+  <header class="iq-topbar">
+    <div class="iq-topbar-copy">
+      <p class="iq-topbar-eyebrow">Sessions</p>
     </div>
-    <div class="stat-tile">
-      <span class="stat-label">Repeated mistakes</span>
-      {% if memory.repeated_mistakes %}
-      <span class="memory-topics">
-        {% for skill in memory.repeated_mistakes %}<span class="badge badge-muted">{{ skill }}</span>{% endfor %}
-      </span>
-      {% else %}<span class="stat-value">&mdash;</span>{% endif %}
-    </div>
-    <div class="stat-tile">
-      <span class="stat-label">Strong topics</span>
-      {% if memory.strong_topics %}
-      <span class="memory-topics">
-        {% for skill in memory.strong_topics %}<span class="badge">{{ skill }}</span>{% endfor %}
-      </span>
-      {% else %}<span class="stat-value">&mdash;</span>{% endif %}
-    </div>
-  </div>
-  {% else %}
-  <div class="empty-state">
-    <p class="empty-state-title">Nothing analyzed yet</p>
-    <p class="empty-state-text">
-      Finish a practice question or a full interview and your recurring
-      weak spots will be tracked here automatically.
-    </p>
-  </div>
-  {% endif %}
-</section>
-
-<section class="card" aria-label="Session filters">
-  <div class="question-meta history-filter">
-    <a class="button button-small {{ 'button-primary' if not mode_filter else 'button-ghost' }}"
-       href="{{ url_for('history.list_view') }}">All sessions</a>
-    {% for mode in modes %}
-    <a class="button button-small {{ 'button-primary' if mode_filter == mode else 'button-ghost' }}"
-       href="{{ url_for('history.list_view', mode=mode) }}">
-      {{ 'Smart Practice' if mode == 'practice' else 'Real Interviews' }}
+    <a class="iq-profile-shortcut" href="{{ url_for('settings.view') }}" aria-label="Your profile">
+      <span class="avatar iq-profile-avatar" aria-hidden="true">{{ user_initial }}</span>
+      <span class="iq-profile-shortcut-label">{{ user_name }}</span>
     </a>
-    {% endfor %}
-  </div>
+  </header>
 
-  {% if interviews %}
-  <ul class="history-list">
-    {% for item in interviews %}
-    <li class="history-item">
-      <div class="history-item-main">
-        <a class="history-item-link"
-           href="{{ url_for('history.detail', interview_id=item.id) }}">
-          {{ item.role if item.mode == 'real' else item.type }}
-        </a>
-        <div class="question-meta">
-          <span class="badge badge-muted">
-            {{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
-          {% if item.mode == 'real' %}
-          <span class="badge badge-muted">{{ item.difficulty | capitalize }}</span>
-          <span class="badge badge-muted">{{ type_labels.get(item.type, item.type) | capitalize }}</span>
-          {% endif %}
-          <span class="badge badge-muted">{{ item.date[:16] }}</span>
-        </div>
-      </div>
-      <div class="history-item-score">
-        {% if item.overall_score is not none %}
-        <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
-          {{ item.overall_score | round(0) | int }}/100
-        </span>
-        {% else %}
-        <span class="badge badge-muted">Not graded</span>
-        {% endif %}
-        <span class="stat-note">{{ item.graded_count }} graded</span>
-        <a class="button button-small button-ghost"
-           href="{{ url_for('replay.walkthrough', interview_id=item.id) }}">Open replay</a>
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <div class="empty-state">
-    <p class="empty-state-title">No completed sessions{% if mode_filter %} in this mode{% endif %}</p>
-    <p class="empty-state-text">
-      Start with Smart Practice or run a timed Real Interview — everything
-      you finish shows up here.
-    </p>
-    <div class="quick-actions">
-      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
-      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+  <section class="iq-hero iq-reveal" aria-labelledby="history-hero-title">
+    <div class="iq-hero-ambient" aria-hidden="true"></div>
+    <div class="iq-hero-content">
+      <p class="iq-hero-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Session archive</p>
+      <h1 class="iq-hero-title" id="history-hero-title">Interview History</h1>
+      <p class="iq-hero-sub">
+        Your past practice sessions and real interviews, newest first — scores,
+        feedback and full session reviews, all in one place.
+      </p>
     </div>
-  </div>
-  {% endif %}
-</section>
+  </section>
+
+  <section class="iq-panel iq-reveal" aria-label="Detected strengths and weaknesses">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title">Interview memory</h2>
+        <p class="iq-panel-sub">
+          Patterns the coach has tracked across your answered sessions.
+        </p>
+      </div>
+    </div>
+
+    {% if memory and (memory.weak_topics or memory.repeated_mistakes or memory.strong_topics) %}
+    <div class="stat-grid memory-grid">
+      <div class="stat-tile">
+        <span class="stat-label">Weak topics</span>
+        {% if memory.weak_topics %}
+        <span class="memory-topics">
+          {% for skill in memory.weak_topics %}<span class="badge">{{ skill }}</span>{% endfor %}
+        </span>
+        {% else %}<span class="stat-value">&mdash;</span>{% endif %}
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Repeated mistakes</span>
+        {% if memory.repeated_mistakes %}
+        <span class="memory-topics">
+          {% for skill in memory.repeated_mistakes %}<span class="badge badge-muted">{{ skill }}</span>{% endfor %}
+        </span>
+        {% else %}<span class="stat-value">&mdash;</span>{% endif %}
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Strong topics</span>
+        {% if memory.strong_topics %}
+        <span class="memory-topics">
+          {% for skill in memory.strong_topics %}<span class="badge">{{ skill }}</span>{% endfor %}
+        </span>
+        {% else %}<span class="stat-value">&mdash;</span>{% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-state-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"></rect><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path><path d="M9 12h6"></path></svg>
+      </span>
+      <p class="empty-state-title">Nothing analyzed yet</p>
+      <p class="empty-state-text">
+        Finish a practice question or a full interview and your recurring
+        weak spots will be tracked here automatically.
+      </p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="iq-panel iq-reveal" aria-label="Session filters">
+    <div class="iq-panel-head iq-panel-head-filters">
+      <div>
+        <h2 class="iq-panel-title">Sessions</h2>
+        <p class="iq-panel-sub">
+          {% if interviews and has_filters %}{{ interviews | length }} session{{ 's' if interviews | length != 1 }} match your filters.{% else %}Filter by mode, difficulty, type, date or search — every finished session is listed below.{% endif %}
+        </p>
+      </div>
+      <div class="history-filter iq-history-filters" role="group" aria-label="Filter sessions by mode">
+        <a class="iq-filter-chip {{ 'is-active' if not mode_filter else '' }}"
+           href="{{ url_for('history.list_view', **preserve_all) }}">All sessions</a>
+        {% for mode in modes %}
+        {% set chip_kwargs = preserve_all if mode == 'real' else preserve_practice %}
+        <a class="iq-filter-chip {{ 'is-active' if mode_filter == mode else '' }}"
+           href="{{ url_for('history.list_view', mode=mode, **chip_kwargs) }}">
+          {{ 'Smart Practice' if mode == 'practice' else 'Real Interviews' }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <form class="iq-history-controls" method="get"
+          action="{{ url_for('history.list_view') }}" aria-label="Search and filter sessions">
+      <input type="hidden" name="mode" value="{{ mode_filter or '' }}">
+
+      <div class="iq-search-field">
+        <label class="visually-hidden" for="history-q">Search sessions</label>
+        <svg class="iq-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <input class="iq-search-input" type="search" id="history-q" name="q"
+               value="{{ q or '' }}" placeholder="Search role or topic…"
+               autocomplete="off" autofocus="{{ 'autofocus' if has_filters }}">
+        {% if q %}
+        <a class="iq-search-clear" href="{{ url_for('history.list_view', **clear_search) }}"
+           aria-label="Clear search" title="Clear search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </a>
+        {% endif %}
+      </div>
+
+      <span class="iq-filter-select-wrap">
+        <label class="visually-hidden" for="history-difficulty">Difficulty</label>
+        <select class="iq-filter-select" id="history-difficulty" name="difficulty" data-autosubmit>
+          <option value="">All difficulties</option>
+          {% for level in difficulties %}
+          <option value="{{ level }}" {{ 'selected' if difficulty == level }}>{{ level | capitalize }}</option>
+          {% endfor %}
+        </select>
+      </span>
+
+      {% if mode_filter != 'practice' %}
+      <span class="iq-filter-select-wrap">
+        <label class="visually-hidden" for="history-type">Interview type</label>
+        <select class="iq-filter-select" id="history-type" name="type" data-autosubmit>
+          <option value="">All interview types</option>
+          {% for key, label in types.items() %}
+          <option value="{{ key }}" {{ 'selected' if interview_type == key }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </span>
+      {% endif %}
+
+      <div class="iq-date-range" role="group" aria-label="Date range">
+        <label class="visually-hidden" for="history-from">From date</label>
+        <span class="iq-date-label" aria-hidden="true">From</span>
+        <input class="iq-date-input" type="date" id="history-from" name="from"
+               value="{{ date_from or '' }}" data-autosubmit>
+        <label class="visually-hidden" for="history-to">To date</label>
+        <span class="iq-date-label" aria-hidden="true">To</span>
+        <input class="iq-date-input" type="date" id="history-to" name="to"
+               value="{{ date_to or '' }}" data-autosubmit>
+      </div>
+
+      <div class="iq-filter-actions">
+        <button type="submit" class="button button-small iq-history-apply">Apply</button>
+        {% if has_filters %}
+        <a class="button button-small button-ghost iq-history-clear"
+           href="{{ url_for('history.list_view') }}">Clear filters</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if interviews %}
+    <ul class="history-list">
+      {% for item in interviews %}
+      <li class="history-item">
+        <span class="history-item-icon" aria-hidden="true">
+          {% if item.mode == 'real' %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"></path></svg>
+          {% else %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"></path></svg>
+          {% endif %}
+        </span>
+        <div class="history-item-main">
+          <a class="history-item-link"
+             href="{{ url_for('history.detail', interview_id=item.id) }}">
+            {{ item.role if item.mode == 'real' else item.type }}
+          </a>
+          <div class="question-meta history-item-meta">
+            <span class="badge badge-muted">
+              {{ 'Real interview' if item.mode == 'real' else 'Practice' }}</span>
+            {% if item.mode == 'real' %}
+            <span class="badge badge-muted">{{ item.difficulty | capitalize }}</span>
+            <span class="badge badge-muted">{{ type_labels.get(item.type, item.type) | capitalize }}</span>
+            {% endif %}
+            <span class="badge badge-muted">{{ item.date[:16] }}</span>
+          </div>
+        </div>
+        <div class="history-item-score">
+          {% if item.overall_score is not none %}
+          <span class="interview-score-badge is-{{ 'high' if item.overall_score >= 75 else ('mid' if item.overall_score >= 50 else 'low') }} badge">
+            {{ item.overall_score | round(0) | int }}/100
+          </span>
+          {% else %}
+          <span class="badge badge-muted">Not graded</span>
+          {% endif %}
+          <span class="stat-note">{{ item.graded_count }} graded</span>
+          <a class="button button-small button-ghost"
+             href="{{ url_for('replay.walkthrough', interview_id=item.id) }}">Open replay</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-state-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2h5a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6.5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V3a1 1 0 0 1 1-1z"></path><path d="M9 13h6M9 17h4"></path></svg>
+      </span>
+      {% if has_filters %}
+      <p class="empty-state-title">No completed sessions match your filters</p>
+      <p class="empty-state-text">
+        Try a different search term, widen the date range, or clear the
+        filters to see all your finished sessions.
+      </p>
+      <div class="quick-actions">
+        <a class="button button-primary button-block iq-btn iq-btn-primary" href="{{ url_for('history.list_view') }}">Clear filters</a>
+      </div>
+      {% else %}
+      <p class="empty-state-title">No completed sessions{% if mode_filter %} in this mode{% endif %}</p>
+      <p class="empty-state-text">
+        Start with Smart Practice or run a timed Real Interview — everything
+        you finish shows up here.
+      </p>
+      <div class="quick-actions">
+        <a class="button button-primary button-block iq-btn iq-btn-primary" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+        <a class="button button-block iq-btn iq-btn-ghost" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+</div>
 {% endif %}
 
 {% if view == 'detail' %}
-<header class="page-header">
-  <h1 class="page-title">{{ type_label if interview.mode == 'practice' else 'Interview result' }}</h1>
-  <p class="page-subtitle">
-    {{ type_label }} · {{ interview.role }}
-    {% if interview.mode == 'real' %} · {{ interview.difficulty | capitalize }}{% endif %}
-    · {{ interview.date[:16] }}
-  </p>
-</header>
+<div class="iq-page">
 
-<section class="card" aria-live="polite">
-  <div class="score-summary interview-result-summary">
-    <div class="score-overall">
-      <span class="stat-value">{{ overall_score | round(0) | int if overall_score is not none else '—' }}<span class="score-denominator">/100</span></span>
-      <span class="stat-label">Overall score</span>
-      <span class="stat-note">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded</span>
+  <header class="iq-topbar">
+    <div class="iq-topbar-copy">
+      <h1 class="iq-greeting">{{ type_label if interview.mode == 'practice' else 'Interview result' }}</h1>
+      <p class="iq-topbar-sub">
+        {{ type_label }} · {{ interview.role }}
+        {% if interview.mode == 'real' %} · {{ interview.difficulty | capitalize }}{% endif %}
+        · {{ interview.date[:16] }}
+      </p>
     </div>
-    <ul class="score-list">
-      {% for key, label in dimensions %}
-      {% set value = averages.get(key) %}
-      {% if value is not none %}
-      <li class="score-item">
-        <span class="score-item-label">{{ label }}</span>
-        <span class="meter" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
-          <span class="meter-fill meter-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"
-                style="width: {{ value | round(0) | int }}%;"></span>
+    <a class="iq-profile-shortcut" href="{{ url_for('settings.view') }}" aria-label="Your profile">
+      <span class="avatar iq-profile-avatar" aria-hidden="true">{{ user_initial }}</span>
+      <span class="iq-profile-shortcut-label">{{ user_name }}</span>
+    </a>
+  </header>
+
+  <section class="iq-panel iq-panel-summary iq-reveal" aria-live="polite">
+    <div class="score-summary interview-result-summary">
+      <div class="score-overall">
+        <span class="stat-value">{{ overall_score | round(0) | int if overall_score is not none else '—' }}<span class="score-denominator">/100</span></span>
+        <span class="stat-label">Overall score</span>
+        <span class="stat-note">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded</span>
+      </div>
+      <ul class="score-list">
+        {% for key, label in dimensions %}
+        {% set value = averages.get(key) %}
+        {% if value is not none %}
+        <li class="score-item">
+          <span class="score-item-label">{{ label }}</span>
+          <span class="meter" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
+            <span class="meter-fill meter-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"
+                  data-fill="{{ value | round(0) | int }}"></span>
+          </span>
+          <span class="score-item-value">{{ value | round(0) | int }}</span>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  {% if overall_score is not none %}
+  <section class="iq-panel iq-reveal compare-panel" aria-labelledby="compare-title">
+    <div class="iq-panel-head">
+      <div>
+        <h2 class="iq-panel-title" id="compare-title">Performance comparison</h2>
+        <p class="iq-panel-sub">
+          {% if comparison %}
+          This session against your previous session with the same mode, role,
+          difficulty and type ({{ comparison.previous.date[:16] }}).
+          {% else %}
+          This session against your previous comparable session.
+          {% endif %}
+        </p>
+      </div>
+      {% if comparison %}
+      <div class="iq-panel-meta" aria-label="Comparison summary">
+        <span class="iq-meta-chip">
+          Previous {{ comparison.previous.overall_score | round(0) | int }}/100
         </span>
-        <span class="score-item-value">{{ value | round(0) | int }}</span>
-      </li>
+        <span class="iq-meta-chip">
+          {{ comparison.type_label }}
+        </span>
+      </div>
       {% endif %}
+    </div>
+
+    {% if comparison %}
+    <div class="compare-grid">
+      <div class="compare-tile">
+        <span class="compare-label">Previous session</span>
+        <span class="compare-value">
+          {{ comparison.previous.overall_score | round(0) | int }}<span class="score-denominator">/100</span>
+        </span>
+      </div>
+      <div class="compare-tile">
+        <span class="compare-label">This session</span>
+        <span class="compare-value">
+          {{ overall_score | round(0) | int }}<span class="score-denominator">/100</span>
+        </span>
+      </div>
+      <div class="compare-tile">
+        <span class="compare-label">Change</span>
+        {% if comparison.overall_delta is not none %}
+        <span class="compare-delta {{ 'is-up' if comparison.overall_delta > 0 else ('is-down' if comparison.overall_delta < 0 else 'is-flat') }}">
+          {{ '+' if comparison.overall_delta > 0 else '' }}{{ comparison.overall_delta }}
+        </span>
+        {% else %}
+        <span class="compare-delta is-flat">&mdash;</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if comparison.dimensions %}
+    <h3 class="sub-heading">Dimension change</h3>
+    <ul class="compare-list">
+      {% for row in comparison.dimensions %}
+      <li class="compare-row">
+        <span class="compare-row-label">{{ row.label }}</span>
+        <span class="compare-row-values">
+          {{ row.previous | round(0) | int }} &rarr; {{ row.current | round(0) | int }}
+        </span>
+        <span class="compare-delta {{ 'is-up' if row.delta > 0 else ('is-down' if row.delta < 0 else 'is-flat') }}"
+              aria-label="{{ row.label }}: {{ 'up' if row.delta > 0 else ('down' if row.delta < 0 else 'unchanged') }} by {{ row.delta | abs }} points">
+          {{ '+' if row.delta > 0 else '' }}{{ row.delta }}
+        </span>
+      </li>
       {% endfor %}
     </ul>
-  </div>
-</section>
-
-{% for item in transcript %}
-<section class="card interview-review-card">
-  <div class="question-meta">
-    <span class="badge">Q{{ item.sequence_order }}</span>
-    {% if item.question_type %}
-    <span class="badge badge-muted">{{ item.question_type | capitalize }}</span>
     {% endif %}
-    {% if item.score is not none %}
-    <span class="badge interview-score-badge
-                 {{ 'is-high' if item.score >= 75 else ('is-mid' if item.score >= 50 else 'is-low') }}">
-      {{ item.score | round(0) | int }}/100
-    </span>
+
+    <p class="stat-note">
+      Compared only with a completed, graded session that matches this
+      session's mode, role, difficulty and type — unlike sessions are never
+      treated as equivalent.
+    </p>
     {% else %}
-    <span class="badge badge-muted">Not answered</span>
+    <div class="empty-state">
+      <p class="empty-state-text">
+        No earlier completed session matches this session's mode, role,
+        difficulty and type yet. Finish another session on the same setup to
+        see how your performance changed.
+      </p>
+    </div>
     {% endif %}
-  </div>
-
-  <p class="ai-text question-text">{{ item.question }}</p>
-
-  {% if item.user_answer is not none %}
-  <details class="reveal" {% if loop.first %}open{% endif %}>
-    <summary>Show your answer</summary>
-    <div class="reveal-body">
-      <p class="user-answer-text">{{ item.user_answer }}</p>
-    </div>
-  </details>
-
-  <h3 class="sub-heading">Coach feedback</h3>
-  <p class="ai-text">{{ item.feedback }}</p>
-
-  {% if item.missing_points %}
-  <h3 class="sub-heading">Missing points</h3>
-  <ul class="missing-list">
-    {% for point in item.missing_points %}
-    <li>{{ point }}</li>
-    {% endfor %}
-  </ul>
+  </section>
   {% endif %}
 
-  <details class="reveal">
-    <summary>Show model answer</summary>
-    <div class="reveal-body">
-      <p class="ai-text">{{ item.model_answer }}</p>
+  {% for item in transcript %}
+  <section class="iq-panel interview-review-card iq-reveal">
+    <div class="question-meta">
+      <span class="badge">Q{{ item.sequence_order }}</span>
+      {% if item.question_type %}
+      <span class="badge badge-muted">{{ item.question_type | capitalize }}</span>
+      {% endif %}
+      {% if item.score is not none %}
+      <span class="badge interview-score-badge
+                   {{ 'is-high' if item.score >= 75 else ('is-mid' if item.score >= 50 else 'is-low') }}">
+        {{ item.score | round(0) | int }}/100
+      </span>
+      {% else %}
+      <span class="badge badge-muted">Not answered</span>
+      {% endif %}
     </div>
-  </details>
-  {% else %}
-  <p class="stat-note">This question was never answered, so it was skipped
-     in grading.</p>
-  {% endif %}
-</section>
-{% endfor %}
 
-<section class="card">
-  <div class="quick-actions">
-    <a class="button button-block button-primary" href="{{ url_for('replay.walkthrough', interview_id=interview.id) }}">Open in Replay</a>
-    <a class="button button-block" href="{{ url_for('history.list_view') }}">Back to history</a>
-    <a class="button button-block" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>
-  </div>
-</section>
+    <p class="ai-text question-text">{{ item.question }}</p>
+
+    {% if item.user_answer is not none %}
+    <details class="reveal" {% if loop.first %}open{% endif %}>
+      <summary>Show your answer</summary>
+      <div class="reveal-body">
+        <p class="user-answer-text">{{ item.user_answer }}</p>
+      </div>
+    </details>
+
+    <h3 class="sub-heading">Coach feedback</h3>
+    <p class="ai-text">{{ item.feedback }}</p>
+
+    {% if item.missing_points %}
+    <h3 class="sub-heading">Missing points</h3>
+    <ul class="missing-list">
+      {% for point in item.missing_points %}
+      <li>{{ point }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <details class="reveal">
+      <summary>Show model answer</summary>
+      <div class="reveal-body">
+        <p class="ai-text">{{ item.model_answer }}</p>
+      </div>
+    </details>
+    {% else %}
+    <p class="stat-note">This question was never answered, so it was skipped
+       in grading.</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  <section class="iq-panel iq-reveal">
+    <div class="quick-actions">
+      <a class="button button-block iq-btn iq-btn-primary" href="{{ url_for('replay.walkthrough', interview_id=interview.id) }}">Open in Replay</a>
+      <a class="button button-block iq-btn iq-btn-ghost" href="{{ url_for('history.list_view') }}">Back to history</a>
+      <a class="button button-block iq-btn iq-btn-ghost" href="{{ url_for('main.dashboard') }}">Back to dashboard</a>
+    </div>
+  </section>
+
+</div>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages.js') }}"></script>
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
 {% endblock %}

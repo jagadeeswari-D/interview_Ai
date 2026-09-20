@@ -1,0 +1,33 @@
+{#
+  Company Presets (Phase 10 / Stage 1) — shared config selector.
+  Expected context: `companies` (list of key/name/short from
+  company_select_options()) and `selected_company` (default key).
+  The select only submits an allowlisted key; the server re-validates it.
+  The context line updates client-side via [data-company-select] handlers in
+  practice.js / interview.js and degrades to the server-rendered default
+  when JavaScript is unavailable.
+#}
+<div class="sp-field" data-company-field>
+  <label class="sp-label" for="company" id="company-label">Company context</label>
+  <div class="sp-select-wrap">
+    <select class="sp-select" id="company" name="company"
+            aria-labelledby="company-label" data-company-select>
+      {% for company in companies %}
+      <option value="{{ company.key }}"
+              data-company-short="{{ company.short }}"
+              {{ 'selected' if (selected_company or 'general') == company.key }}>
+        {{ company.name }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  {% for company in companies %}
+    {% if (selected_company or 'general') == company.key %}
+    <p class="sp-hint" data-company-context>{{ company.short }}</p>
+    {% endif %}
+  {% endfor %}
+  <p class="sp-hint sp-hint-muted">
+    Question is AI-generated practice based on the selected company context —
+    a simulated preparation setting, not an official hiring process.
+  </p>
+</div>

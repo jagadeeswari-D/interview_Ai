@@ -49,7 +49,12 @@ CREATE TABLE IF NOT EXISTS interviews (
     -- every request so expiry can be enforced server-side (blueprint B.5/H.6)
     -- even after a page reload.
     question_limit   INTEGER NOT NULL DEFAULT 0,
-    duration_minutes INTEGER NOT NULL DEFAULT 0
+    duration_minutes INTEGER NOT NULL DEFAULT 0,
+    -- Company Presets (Phase 10 / Stage 1): allowlisted preset key selected
+    -- by the user, or NULL for General/No Company (identical to pre-Phase-10
+    -- behavior). Only keys validated against the static server allowlist are
+    -- ever stored here; it is never free text.
+    company_key       TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_interviews_user ON interviews(user_id);
@@ -141,3 +146,99 @@ CREATE TABLE IF NOT EXISTS roadmaps (
 );
 
 CREATE INDEX IF NOT EXISTS idx_roadmaps_user ON roadmaps(user_id);
+
+-- User preferences (Settings page). Single JSON blob per user keeping the
+-- per-user preference surface small and easy to extend without migrations.
+CREATE TABLE IF NOT EXISTS user_settings (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    settings   TEXT NOT NULL DEFAULT '{}',
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Question Bookmarks (Stage 8, Phase 8). One row per user+question;
+-- UNIQUE(user_id, question_id) prevents duplicates at the DB level and backs
+-- every user-scoped lookup. CASCADE keeps bookmarks deleted with the user or
+-- the question. Ownership (question belongs to the signed-in user's own
+-- interview) is enforced in the application layer, matching Replay guards.
+CREATE TABLE IF NOT EXISTS bookmarks (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, question_id)
+);
+
+-- Personal Notes (Stage 8, Phase 8). A private user-owned note attached to
+-- one question. One row per user+question: UNIQUE(user_id, question_id)
+-- prevents duplicates and backs lookups. Content is never exposed outside the
+-- question's own Replay walkthrough; ownership (interview+question) is
+-- enforced in the application layer exactly like bookmarks and Replay.
+CREATE TABLE IF NOT EXISTS personal_notes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    content     TEXT NOT NULL DEFAULT '',
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, question_id)
+);
+
+-- Daily Challenge (Phase 9 / Stage 1). One deterministic challenge per user
+-- per calendar day. UNIQUE(user_id, challenge_date) is the one-per-day /
+-- one-per-user guarantee and backs every lookup; the question is written by
+-- the server the first time the user opens the page, so a refresh returns the
+-- same challenge and never creates a duplicate. `status`, `answer` and
+-- `completed_at` are only ever changed by the CSRF-protected answer route;
+-- ownership follows the users row (CASCADE keeps rows with their user).
+CREATE TABLE IF NOT EXISTS daily_challenges (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id           INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    challenge_date    TEXT NOT NULL,                 -- YYYY-MM-DD (local day)
+    question          TEXT NOT NULL,
+    question_type     TEXT NOT NULL DEFAULT '',
+    expected_concepts TEXT NOT NULL DEFAULT '[]',    -- JSON array of concepts
+    status            TEXT NOT NULL DEFAULT 'pending'
+                      CHECK (status IN ('pending', 'completed')),
+    answer            TEXT,                          -- NULL until submitted
+    completed_at      TEXT,
+    UNIQUE (user_id, challenge_date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_challenges_user ON daily_challenges(user_id);
+
+-- Achievements / Badges (Phase 9 / Stage 3). One row per user+achievement
+-- unlock. Achievement definitions live in code (app/achievements.py);
+-- this table records the server-authoritative moment an achievement was
+-- unlocked (never a value the browser can write). UNIQUE(user_id,
+-- achievement_key) plus INSERT OR IGNORE keep unlocks idempotent and
+-- monotonic; CASCADE keeps badges with their user.
+CREATE TABLE IF NOT EXISTS user_achievements (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    achievement_key TEXT NOT NULL,
+    unlocked_at     TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, achievement_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_id);
+
+-- XP ledger (Stage 14). One append-only row per XP award. `source` names the
+-- completion system ('practice_answer' | 'real_interview' |
+-- 'daily_challenge' | 'achievement') and `event_key` is that system's
+-- authoritative unique id (question id / interview id / challenge id /
+-- achievement key). UNIQUE(user_id, source, event_key) is the
+-- database-enforced idempotency boundary: a duplicate, retried, or raced
+-- award of the same logical event is an INSERT OR IGNORE no-op, so XP can
+-- never be granted twice. `xp` is a positive server-derived amount; the
+-- browser never supplies values here.
+CREATE TABLE IF NOT EXISTS xp_ledger (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    source     TEXT NOT NULL,
+    event_key  TEXT NOT NULL,
+    xp         INTEGER NOT NULL CHECK (xp > 0),
+    awarded_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, source, event_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_xp_ledger_user ON xp_ledger(user_id);

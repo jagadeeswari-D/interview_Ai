@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    InterviewIQ — Core UI shell (Stage 1)
    Design system per blueprint: professional SaaS aesthetic, 8–16px spacing
    scale, 10px radius, subtle 1px borders, CSS-variable theming.
@@ -60,6 +60,12 @@
   --glow-ember: #9a6744;
   --shadow-soft: 0 1px 2px rgba(70, 45, 28, 0.08);
   --focus-ring: 0 0 0 3px rgba(140, 84, 46, 0.28);
+  /* Extended semantic tokens (defaults for the shared shell; the product
+     pages redefine these per-theme in theme.css). */
+  --text-secondary: #4a4038;
+  --border-strong: rgba(116, 88, 64, 0.3);
+  --input-bg: #fffdf9;
+  --placeholder: #9b8f83;
 }
 
 /* Dark theme — the primary, editorial near-black identity. */
@@ -94,6 +100,11 @@
   --glow-ember: #cf9d7b;
   --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.45);
   --focus-ring: 0 0 0 3px rgba(207, 157, 123, 0.35);
+  /* Extended semantic tokens (dark defaults). */
+  --text-secondary: #c4b9ac;
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --input-bg: #141d22;
+  --placeholder: #8d8277;
 }
 
 /* ---- 2. Reset & base ------------------------------------------------ */
@@ -302,6 +313,7 @@ img {
   padding: var(--spacing-6);
   max-width: 1080px;
   width: 100%;
+  min-width: 0;
 }
 
 /* ---- 6. Sidebar ------------------------------------------------------- */
@@ -701,7 +713,7 @@ img {
 }
 
 .auth-subtitle {
-  color: var(--text-muted);
+  color: var(--text-secondary, var(--text-muted));
   margin-bottom: var(--spacing-5);
 }
 
@@ -733,10 +745,15 @@ img {
   padding: 10px 12px;
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
-  background-color: var(--bg-inset);
+  background-color: var(--input-bg, var(--bg-inset));
   color: var(--text);
   font: inherit;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field-input::placeholder {
+  color: var(--placeholder, var(--text-muted));
+  opacity: 1;
 }
 
 .field-input:focus {
@@ -759,7 +776,7 @@ select {
   padding: 10px 12px;
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
-  background-color: var(--bg-inset);
+  background-color: var(--input-bg, var(--bg-inset));
   color: var(--text);
   font: inherit;
   cursor: pointer;
@@ -821,6 +838,13 @@ input[type="file"]:focus-visible {
   box-shadow: var(--focus-ring);
 }
 
+/* Placeholder readability — tuned per theme (never the faint default gray). */
+input::placeholder,
+textarea::placeholder {
+  color: var(--placeholder, var(--text-muted));
+  opacity: 1;
+}
+
 /* ---- 10. Dashboard ------------------------------------------------------- */
 .page-header {
   margin-bottom: var(--spacing-5);
@@ -832,7 +856,7 @@ input[type="file"]:focus-visible {
 }
 
 .page-subtitle {
-  color: var(--text-muted);
+  color: var(--text-secondary, var(--text-muted));
   margin-bottom: 0;
 }
 
@@ -850,7 +874,7 @@ input[type="file"]:focus-visible {
 }
 
 .stat-label {
-  color: var(--text-muted);
+  color: var(--text-secondary, var(--text-muted));
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1192,6 +1216,7 @@ input[type="file"]:focus-visible {
 .meter-fill {
   display: block;
   height: 100%;
+  width: 0;
   border-radius: 999px;
 }
 
@@ -1804,35 +1829,40 @@ body.auth-page {
 }
 
 [data-theme="light"] body.auth-page {
-  --bg: #f1eee8;
-  --bg-elevated: #f9f6f1;
-  --bg-inset: #e9e5dd;
-  --sidebar-bg: #ece8e0;
-  --text: #17181c;
-  --text-muted: #5f6570;
-  --border: rgba(23, 24, 28, 0.1);
-  --input-border: rgba(23, 24, 28, 0.22);
+  --bg: #eef1f6;
+  --bg-elevated: #fbfcfe;
+  --bg-inset: #e4e9f1;
+  --sidebar-bg: rgba(255, 255, 255, 0.82);
+  --text: #161a23;
+  --text-secondary: #3a4351;
+  --text-muted: #57616f;
+  --border: rgba(23, 30, 46, 0.12);
+  --border-strong: rgba(23, 30, 46, 0.2);
+  --input-border: rgba(23, 30, 46, 0.2);
+  --input-bg: #ffffff;
+  --placeholder: #66707f;
   --primary: #4656d8;
-  --primary-hover: #5261e0;
-  --primary-text: #4656d8;
-  --primary-text-hover: #3947c8;
+  --primary-hover: #5b6ae6;
+  --primary-text: #3a49c8;
+  --primary-text-hover: #2b3ab5;
   --primary-contrast: #ffffff;
-  --primary-soft: rgba(70, 86, 216, 0.13);
+  --primary-soft: rgba(70, 86, 216, 0.12);
   --active-bg: rgba(70, 86, 216, 0.14);
-  --hover-bg: #e7e2d9;
-  --success: #3f64b8;
-  --success-soft: rgba(63, 100, 184, 0.13);
-  --danger: #b23a46;
-  --danger-soft: rgba(178, 58, 70, 0.12);
-  --warning: #8c5d1f;
-  --warning-soft: rgba(140, 93, 31, 0.14);
+  --hover-bg: rgba(23, 30, 46, 0.06);
+  --success: #0f7a57;
+  --success-soft: rgba(15, 122, 87, 0.12);
+  --danger: #c0454e;
+  --danger-soft: rgba(192, 69, 78, 0.12);
+  --warning: #a86a14;
+  --warning-soft: rgba(168, 106, 20, 0.14);
   --info: #4656d8;
   --info-soft: rgba(70, 86, 216, 0.1);
   --glow-core: rgba(70, 86, 216, 0.35);
   --glow-ring: rgba(70, 86, 216, 0.22);
   --glow-ember: #4656d8;
-  --shadow-soft: 0 24px 70px -34px rgba(30, 25, 60, 0.45);
-  --focus-ring: 0 0 0 3px rgba(70, 86, 216, 0.28);
+  --shadow-soft: 0 1px 2px rgba(20, 26, 44, 0.06),
+    0 2px 10px -3px rgba(20, 26, 44, 0.06);
+  --focus-ring: 0 0 0 3px rgba(70, 86, 216, 0.32);
 }
 
 /* ---- Ambient backdrop: subtle grid + soft blue/purple glow ---- */
@@ -2001,7 +2031,7 @@ body.auth-page {
   padding: 13px 15px;
   border-radius: 12px;
   border: 1px solid var(--input-border);
-  background-color: var(--bg-inset);
+  background-color: var(--input-bg, var(--bg-inset));
   color: var(--text);
   font: inherit;
   transition: border-color 0.18s ease, box-shadow 0.18s ease,

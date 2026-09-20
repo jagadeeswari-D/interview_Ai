@@ -460,13 +460,13 @@ class DashboardTests(Stage6TestBase):
         self._complete_practice_session(topic="Tiles topic two")
 
         html = self.client.get("/dashboard").get_data(as_text=True)
-        self.assertIn("Real Interviews", html)
-        self.assertIn("Practice Sessions", html)
-        self.assertIn('class="sparkline"', html)
-        points = re.search(r'<polyline points="([^"]+)"', html)
-        self.assertIsNotNone(points)
-        self.assertTrue(points.group(1).count(",") >= 1)
+        self.assertIn("Interviews Completed", html)
+        self.assertIn("Questions Practiced", html)
+        self.assertIn('class="iq-skill-name">Tiles topic', html)
+        self.assertIn('class="iq-skill-name">Tiles topic two', html)
         self.assertIn("Tiles topic", html)
+        self.assertNotIn("No skill data yet", html)
+        self.assertNotIn("No answers yet", html)
 
     def test_readiness_recalculates_after_every_interview(self):
         self._complete_practice_session(topic="Recalc topic")
@@ -941,18 +941,19 @@ class GeminiRateLimitTests(RateLimitTestBase):
 # ---------------------------------------------------------------------------
 
 class SidebarScopeTests(Stage6TestBase):
-    def test_settings_still_disabled_profile_now_active(self):
+    def test_settings_and_profile_now_both_active(self):
         self._register_and_login()
         html = self.client.get("/dashboard").get_data(as_text=True)
 
         self.assertIn('href="/resume"', html)
         self.assertIn('href="/analytics"', html)
         self.assertIn('href="/reports"', html)
-        # Profile shipped as a real page (Account section); Settings is the
-        # only remaining deferred placeholder.
-        self.assertEqual(html.count("soon-badge"), 1)
-        self.assertNotIn('aria-disabled="true">Profile', html)
-        self.assertIn('aria-disabled="true">Settings', html)
+        # Profile and Settings shipped as real pages (Account section); no
+        # deferred placeholders remain in the sidebar.
+        self.assertIn('href="/settings"', html)
+        self.assertIn('href="/profile"', html)
+        self.assertNotIn("soon-badge", html)
+        self.assertNotIn('aria-disabled', html)
 
 
 class StartupAndMigrationTests(unittest.TestCase):

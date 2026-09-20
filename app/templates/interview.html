@@ -1,267 +1,580 @@
 {% extends "base.html" %}
 {% block title %}Real Interview — InterviewIQ{% endblock %}
 
+{% block body_class %}page-interview{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/practice.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/interview.css') }}">
+{% endblock %}
+
 {% block content %}
 
 {% if view == 'config' %}
-<header class="page-header">
-  <h1 class="page-title">AI Real Interview</h1>
-  <p class="page-subtitle">
-    A timed, pressure-realistic session with an AI interviewer. No hints, no
-    model answers — full feedback only at the end.
-  </p>
-</header>
+<div class="riv-flow">
 
-<section class="card">
-  <h2 class="card-title">Configure your interview</h2>
-  <form method="post" action="{{ url_for('interview.start') }}" class="form">
-    {{ csrf_token() }}
-    <div class="field">
-      <label class="field-label" for="role">Target role</label>
-      <input class="field-input" type="text" id="role" name="role" required
-             minlength="2" maxlength="80" value="{{ role_label }}" autofocus
-             placeholder="e.g. Backend Developer, Data Analyst">
+  <section class="sp-hero" aria-labelledby="riv-hero-title">
+    <div class="sp-hero-ambient" aria-hidden="true"></div>
+    <div class="sp-hero-content">
+      <p class="sp-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Real Interview</p>
+      <h1 class="sp-hero-title" id="riv-hero-title">Step into the room.</h1>
+      <p class="sp-hero-tagline">Answer under real time pressure.</p>
+      <p class="sp-hero-sub">A timed, pressure-realistic session with an AI interviewer.
+        No hints, no model answers — full feedback only at the end.</p>
+    </div>
+  </section>
+
+  <section class="sp-panel" aria-labelledby="riv-setup-title">
+    <div class="sp-panel-head">
+      <div>
+        <h2 class="sp-panel-title" id="riv-setup-title">Configure your interview</h2>
+        <p class="sp-panel-sub">Set the role and format you are preparing for, and how you want to respond.</p>
+      </div>
     </div>
 
-    <div class="field">
-      <label class="field-label" for="type">Interview type</label>
-      <select class="field-input" id="type" name="type">
-        {% for key, label in types.items() %}
-        <option value="{{ key }}">{{ label }}</option>
-        {% endfor %}
-      </select>
+    <form method="post" action="{{ url_for('interview.start') }}" id="riv-setup-form">
+      {{ csrf_token() }}
+      <div class="sp-setup-grid">
+        <div class="sp-field">
+          <label class="sp-label" for="role">Target role</label>
+          <input class="sp-input" type="text" id="role" name="role" required
+                 minlength="2" maxlength="80" value="{{ role_label }}" autofocus
+                 placeholder="e.g. Backend Developer, Data Analyst"
+                 autocomplete="off">
+        </div>
+        <div class="sp-field">
+          <label class="sp-label" for="type">Interview type</label>
+          <div class="sp-select-wrap">
+            <select class="sp-select" id="type" name="type">
+              {% for key, label in types.items() %}
+              <option value="{{ key }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-field riv-difficulty-field">
+        <label class="sp-label" for="difficulty">Difficulty</label>
+        <div class="sp-select-wrap">
+          <select class="sp-select" id="difficulty" name="difficulty">
+            {% for level in difficulties %}
+            <option value="{{ level }}"
+                    data-questions="{{ budgets[level].question_limit }}"
+                    data-minutes="{{ budgets[level].duration_minutes }}"
+                    {{ 'selected' if level == 'medium' }}>
+              {{ level | capitalize }} — {{ budgets[level].question_limit }} questions,
+              {{ budgets[level].duration_minutes }} minutes
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <p class="sp-hint">The timer starts with the first question and runs for the whole session.</p>
+      </div>
+
+      {% include "_company_select.html" %}
+
+      <fieldset class="riv-mode-fieldset">
+        <legend class="sp-label riv-mode-legend">Response mode</legend>
+        <div class="riv-modes" data-mode-cards>
+
+          <label class="riv-mode-card" data-mode-card="voice-voice">
+            <input class="riv-mode-radio" type="radio" name="response_mode"
+                   value="voice-voice">
+            <span class="riv-mode-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                <line x1="12" y1="18" x2="12" y2="22"></line>
+              </svg>
+            </span>
+            <span class="riv-mode-title">Voice → Voice</span>
+            <span class="riv-mode-desc">The interviewer speaks aloud and you reply using your microphone.</span>
+            <span class="riv-mode-note" data-mode-note></span>
+            <span class="riv-mode-check" aria-hidden="true"></span>
+          </label>
+
+          <label class="riv-mode-card" data-mode-card="voice-text">
+            <input class="riv-mode-radio" type="radio" name="response_mode"
+                   value="voice-text">
+            <span class="riv-mode-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+              </svg>
+            </span>
+            <span class="riv-mode-title">Voice → Text</span>
+            <span class="riv-mode-desc">The interviewer speaks aloud and you type your answer.</span>
+            <span class="riv-mode-note" data-mode-note></span>
+            <span class="riv-mode-check" aria-hidden="true"></span>
+          </label>
+
+          <label class="riv-mode-card" data-mode-card="text-text">
+            <input class="riv-mode-radio" type="radio" name="response_mode"
+                   value="text-text">
+            <span class="riv-mode-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <line x1="8" y1="9" x2="16" y2="9"></line>
+                <line x1="8" y1="13" x2="12" y2="13"></line>
+              </svg>
+            </span>
+            <span class="riv-mode-title">Text → Text</span>
+            <span class="riv-mode-desc">The interviewer displays each question and you type your answer. Works everywhere.</span>
+            <span class="riv-mode-note" data-mode-note></span>
+            <span class="riv-mode-check" aria-hidden="true"></span>
+          </label>
+
+        </div>
+        <p class="sp-hint" id="riv-mode-script-hint">Speech features use your browser only —
+          nothing is sent to an external voice provider.</p>
+      </fieldset>
+
+      <div class="sp-setup-actions">
+        <button type="submit" class="sp-btn sp-btn-primary sp-btn-large">
+          Start timed interview
+        </button>
+        <p class="sp-hint sp-hint-inline">Your session is graded when it ends — scores and
+          model answers unlock on the completion screen.</p>
+      </div>
+    </form>
+  </section>
+
+  <section class="sp-panel" aria-labelledby="riv-rules-title">
+    <div class="sp-panel-head">
+      <div>
+        <h2 class="sp-panel-title" id="riv-rules-title">How a real session works</h2>
+        <p class="sp-panel-sub">One question at a time, realistically timed.</p>
+      </div>
     </div>
+    <ul class="riv-rules-list">
+      <li>The AI interviewer asks one question at a time and follows up on what you
+          actually say.</li>
+      <li><strong>No hints or model answers</strong> are shown during the interview.</li>
+      <li>When the timer hits zero, whatever you typed is submitted as-is and the
+          session is graded.</li>
+      <li>Scores, coach feedback, and model answers unlock on the completion screen only.</li>
+    </ul>
+  </section>
 
-    <div class="field">
-      <label class="field-label" for="difficulty">Difficulty</label>
-      <select class="field-input" id="difficulty" name="difficulty">
-        {% for level in difficulties %}
-        <option value="{{ level }}"
-                data-questions="{{ budgets[level].question_limit }}"
-                data-minutes="{{ budgets[level].duration_minutes }}"
-                {{ 'selected' if level == 'medium' }}>
-          {{ level | capitalize }} — {{ budgets[level].question_limit }} questions,
-          {{ budgets[level].duration_minutes }} minutes
-        </option>
-        {% endfor %}
-      </select>
-      <p class="field-hint">The timer starts with the first question and runs
-         for the whole session.</p>
-    </div>
-
-    <button type="submit" class="button button-primary button-large">
-      Start timed interview
-    </button>
-  </form>
-</section>
-
-<section class="interview-rules card">
-  <h2 class="card-title">How a real session works</h2>
-  <ul class="concept-list">
-    <li>The AI interviewer asks one question at a time and follows up on what
-        you actually say.</li>
-    <li><strong>No hints or model answers</strong> are shown during the
-        interview.</li>
-    <li>When the timer hits zero, whatever you typed is submitted as-is and
-        the session is graded.</li>
-    <li>Scores, coach feedback, and model answers unlock on the completion
-        screen only.</li>
-  </ul>
-</section>
+</div>
 {% endif %}
 
 {% if view == 'live' %}
-<div class="interview-live-header page-header">
-  <div class="timer" id="interview-timer"
-       data-seconds-remaining="{{ remaining_seconds }}"
-       role="timer" aria-label="Time remaining">
-    <span class="timer-value" id="timer-value">--:--</span>
-    <span class="timer-label">time left</span>
+<div class="riv-live-head">
+  <div class="riv-live-head-main">
+    <p class="riv-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Live interview</p>
+    <div class="riv-live-badges">
+      <span class="sp-badge sp-badge-accent">{{ type_label }}</span>
+      <span class="sp-badge">{{ interview.role }}</span>
+      <span class="sp-badge {{ 'sp-badge-easy' if interview.difficulty == 'easy' else ('sp-badge-medium' if interview.difficulty == 'medium' else 'sp-badge-hard') }}">
+        {{ interview.difficulty | capitalize }}</span>
+      {% if company_preset %}<span class="sp-badge sp-badge-company">{{ company_preset.name }}</span>{% endif %}
+    </div>
   </div>
-  <div class="interview-progress">
-    <span class="interview-progress-text">Question {{ question_number }} of {{ interview.question_limit }}</span>
-    <span class="meter interview-progress-meter"
-          aria-hidden="true"><span class="meter-fill meter-high" id="progress-fill"
-          style="width: {{ ((question_number - 1) / interview.question_limit * 100) | round | int }}%;"></span></span>
-    <span class="badge badge-muted">{{ type_label }}</span>
-    <span class="badge badge-muted">{{ interview.role }}</span>
+
+  <div class="riv-live-head-side">
+    <div class="timer" id="interview-timer"
+         data-seconds-remaining="{{ remaining_seconds }}"
+         role="timer" aria-label="Time remaining">
+      <span class="timer-value" id="timer-value">--:--</span>
+      <span class="timer-label">time left</span>
+    </div>
+    <div class="interview-progress">
+      <div class="riv-progress-row">
+        <span class="interview-progress-text">Question {{ question_number }} of {{ interview.question_limit }}</span>
+      </div>
+      <span class="meter interview-progress-meter"
+            aria-hidden="true"><span class="meter-fill meter-high" id="progress-fill"
+            data-fill="{{ ((question_number - 1) / interview.question_limit * 100) | round | int }}"></span></span>
+    </div>
   </div>
 </div>
 
-<section class="card interview-live-card">
-  {% if q.question_type %}
-  <div class="question-meta">
-    <span class="badge">{{ q.question_type | capitalize }}</span>
-  </div>
-  {% endif %}
-  <p class="ai-text question-text" aria-live="polite">{{ q.question }}</p>
+<section class="riv-live-card" data-riv-live
+         data-interview-id="{{ interview.id }}"
+         data-answer-preserved="{{ '1' if preserved_answer else '' }}">
+  <div class="riv-live-grid">
 
-  <form method="post" id="interview-answer-form" class="form"
-        action="{{ url_for('interview.submit_answer', interview_id=interview.id) }}">
-    {{ csrf_token() }}
-    <input type="hidden" name="question_id" value="{{ q.id }}">
-    <div class="field">
-      <label class="field-label" for="answer">Your answer</label>
-      <textarea class="field-input" id="answer" name="answer" rows="9"
-                maxlength="5000" autofocus
-                placeholder="Answer as you would in the room…">{{ preserved_answer }}</textarea>
-      <p class="field-hint">Hints are off. If the timer runs out mid-answer,
-         your draft is auto-submitted as-is.</p>
+    <div class="riv-avatar-pane">
+      <p class="riv-pane-caption">AI Interviewer</p>
+      <div class="riv-avatar" data-avatar>
+
+        <div class="riv-h3d" aria-hidden="true">
+          <div class="riv-h3d-room">
+            <div class="riv-h3d-bg"></div>
+            <div class="riv-h3d-halo"></div>
+            <span class="riv-h3d-ring"></span>
+
+            <svg class="riv-h3d-bust" viewBox="0 0 220 260" role="img"
+                 aria-label="Stylized 3D AI interviewer">
+              <defs>
+                <radialGradient id="riv-skin" cx="38%" cy="28%" r="95%">
+                  <stop offset="0%" stop-color="#f4d2a6"></stop>
+                  <stop offset="62%" stop-color="#e0ab7c"></stop>
+                  <stop offset="100%" stop-color="#b9855d"></stop>
+                </radialGradient>
+                <linearGradient id="riv-neck" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#cf9c70"></stop>
+                  <stop offset="100%" stop-color="#a87349"></stop>
+                </linearGradient>
+                <radialGradient id="riv-chin" cx="50%" cy="0%" r="120%">
+                  <stop offset="0%" stop-color="rgba(30,16,8,0.42)"></stop>
+                  <stop offset="70%" stop-color="rgba(30,16,8,0.12)"></stop>
+                  <stop offset="100%" stop-color="rgba(30,16,8,0)"></stop>
+                </radialGradient>
+                <linearGradient id="riv-suit" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2c323c"></stop>
+                  <stop offset="100%" stop-color="#191d24"></stop>
+                </linearGradient>
+                <linearGradient id="riv-shirt" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#f6f4ee"></stop>
+                  <stop offset="100%" stop-color="#d8d3c6"></stop>
+                </linearGradient>
+              </defs>
+
+              <!-- back hair + ears -->
+              <path d="M110 36 C140 38 159 62 159 92 C159 104 156 111 151 116
+                       C147 98 140 81 127 72 C118 66 102 66 93 72 C80 81 73 98
+                       69 116 C64 111 61 104 61 92 C61 62 80 38 110 36 Z"
+                    fill="#262b33"></path>
+              <ellipse cx="62" cy="103" rx="7" ry="11" fill="#cf9c70"></ellipse>
+              <ellipse cx="158" cy="103" rx="7" ry="11" fill="#cf9c70"></ellipse>
+
+              <!-- neck -->
+              <path d="M96 138 C96 133 101 130 106 130 L114 130 C119 130 124 133
+                       124 138 L124 174 L96 174 Z" fill="url(#riv-neck)"></path>
+
+              <!-- torso: professional blazer, shirt V and tie -->
+              <g class="riv-h3d-torso">
+                <path d="M16 260 C16 228 44 208 74 200 C92 195 128 195 146 200
+                         C176 208 204 228 204 260 Z" fill="url(#riv-suit)"></path>
+                <path d="M110 172 L84 212 C96 226 124 226 136 212 Z"
+                      fill="url(#riv-shirt)"></path>
+                <path d="M110 172 L96 204 L84 214 C92 211 101 205 105 196 Z"
+                      fill="#383f4b"></path>
+                <path d="M110 172 L124 204 L136 214 C128 211 119 205 115 196 Z"
+                      fill="#383f4b"></path>
+                <path d="M110 174 L100 194 L106 226 L114 226 L120 194 Z"
+                      fill="#43536f"></path>
+                <path d="M36 260 C42 234 62 218 88 207 L92 260 Z"
+                      fill="rgba(255,255,255,0.045)"></path>
+              </g>
+
+              <!-- head group: standalone subtle sway -->
+              <g class="riv-h3d-head">
+                <path d="M110 40 C135 40 154 58 154 88 C154 110 149 129 139 143
+                         C132 151 122 154 110 154 C98 154 88 151 81 143
+                         C71 129 66 110 66 88 C66 58 85 40 110 40 Z"
+                      fill="url(#riv-skin)"></path>
+
+                <!-- soft 3-D modelling (side shading + highlight) -->
+                <ellipse cx="137" cy="102" rx="19" ry="32" fill="rgba(52,30,18,0.16)"></ellipse>
+                <ellipse cx="83" cy="94" rx="15" ry="28" fill="rgba(255,240,220,0.10)"></ellipse>
+
+                <!-- hair -->
+                <path d="M67 88 C67 60 84 40 110 40 C136 40 153 60 153 88
+                         C141 78 127 72 110 72 C93 72 79 78 67 88 Z"
+                      fill="#262b33"></path>
+                <path d="M84 52 C92 45 103 42 116 43 C106 47 98 51 92 57
+                         C88 62 86 66 86 70 C84 62 83 56 84 52 Z"
+                      fill="rgba(255,255,255,0.10)"></path>
+
+                <!-- brows -->
+                <path d="M91 88 C97 84 107 84 113 87" stroke="#3b2c22"
+                      stroke-width="3.2" stroke-linecap="round" fill="none"></path>
+                <path d="M107 87 C113 84 123 84 129 88" stroke="#3b2c22"
+                      stroke-width="3.2" stroke-linecap="round" fill="none"></path>
+
+                <!-- eyes (CSS blink) -->
+                <g class="riv-h3d-eye">
+                  <ellipse cx="96" cy="101" rx="6.4" ry="4.4" fill="#f4f0e8"></ellipse>
+                  <circle cx="96.2" cy="101.5" r="3.3" fill="#6b4c33"></circle>
+                  <circle cx="96.2" cy="101.5" r="1.6" fill="#1c1410"></circle>
+                  <circle cx="95.1" cy="100.4" r="0.9" fill="rgba(255,255,255,0.95)"></circle>
+                </g>
+                <g class="riv-h3d-eye riv-h3d-eye-r">
+                  <ellipse cx="124" cy="101" rx="6.4" ry="4.4" fill="#f4f0e8"></ellipse>
+                  <circle cx="123.8" cy="101.5" r="3.3" fill="#6b4c33"></circle>
+                  <circle cx="123.8" cy="101.5" r="1.6" fill="#1c1410"></circle>
+                  <circle cx="124.9" cy="100.4" r="0.9" fill="rgba(255,255,255,0.95)"></circle>
+                </g>
+
+                <!-- nose (soft side shade) -->
+                <path d="M110 98 C111 105 110 112 104 118 C107 120 113 119 116 116"
+                      stroke="rgba(140,96,64,0.5)" stroke-width="2.2"
+                      stroke-linecap="round" fill="none"></path>
+
+                <!-- mouth: closed line + open (speaking) shape -->
+                <g class="riv-h3d-mouth-group">
+                  <path class="riv-h3d-mouth"
+                        d="M100 131 C106 135 114 135 120 131"
+                        stroke="#9c5f43" stroke-width="3.2" stroke-linecap="round"
+                        fill="none"></path>
+                  <g class="riv-h3d-mouth-open">
+                    <ellipse cx="110" cy="130" rx="8" ry="5.2" fill="#5f2f24"></ellipse>
+                    <ellipse cx="110" cy="131.6" rx="4.6" ry="2.2" fill="#a34a3a"></ellipse>
+                  </g>
+                </g>
+
+                <!-- under-chin shadow onto the collar -->
+                <ellipse cx="110" cy="154" rx="24" ry="7" fill="url(#riv-chin)"></ellipse>
+              </g>
+            </svg>
+
+            <div class="riv-h3d-shadow"></div>
+
+            <div class="riv-h3d-nameplate">
+              <span class="riv-h3d-name">AI Interviewer</span>
+              <span class="riv-h3d-role">InterviewIQ Talent Team</span>
+            </div>
+          </div>
+        </div>
+
+        <span class="riv-avatar-state" data-avatar-state role="status"
+              aria-live="polite">Idle</span>
+      </div>
+
+      <div class="riv-modebar" role="group" aria-label="Response mode">
+        <span class="riv-modebar-label">Response mode</span>
+        <button type="button" class="riv-mode-btn" data-mode="text-text"
+                aria-pressed="false">Text → Text</button>
+        <button type="button" class="riv-mode-btn" data-mode="voice-text"
+                aria-pressed="false">Voice → Text</button>
+        <button type="button" class="riv-mode-btn" data-mode="voice-voice"
+                aria-pressed="false">Voice → Voice</button>
+      </div>
     </div>
-    <button type="submit" class="button button-primary" id="answer-submit">
-      Submit answer
-    </button>
-  </form>
-</section>
 
-<form method="post" class="interview-finish-form"
-      action="{{ url_for('interview.finish', interview_id=interview.id) }}">
-  {{ csrf_token() }}
-  <button type="submit" class="button button-ghost button-small">
-    End interview &amp; see results
-  </button>
-</form>
+    <div class="riv-main-pane">
+      <div class="question-meta">
+        {% if q.question_type %}
+        <span class="badge">{{ q.question_type | capitalize }}</span>
+        {% endif %}
+        <span class="badge badge-muted">{{ interview.role }}</span>
+        <span class="badge badge-muted">{{ type_label }}</span>
+        <span class="badge badge-muted">{{ interview.difficulty | capitalize }}</span>
+      </div>
+      <p class="ai-text question-text" data-question aria-live="polite">{{ q.question }}</p>
+
+      <div class="riv-speech" data-tts-controls hidden>
+        <button type="button" class="riv-ctrl riv-ctrl-mic" data-btn-replay><span aria-hidden="true">🔊</span> Replay question</button>
+        <button type="button" class="riv-ctrl" data-btn-mute aria-pressed="false">Mute voice</button>
+        <span class="riv-tts-status" data-tts-status role="status"
+              aria-live="polite" hidden></span>
+      </div>
+
+      <form method="post" id="interview-answer-form" class="riv-answer-form"
+            action="{{ url_for('interview.submit_answer', interview_id=interview.id) }}">
+        {{ csrf_token() }}
+        <input type="hidden" name="question_id" value="{{ q.id }}">
+        <div class="riv-answer-head">
+          <label class="sp-label" for="answer">Your answer</label>
+          <span class="riv-mode-running" data-mode-indicator>Text → Text</span>
+        </div>
+        <textarea class="sp-textarea" id="answer" name="answer" rows="9"
+                  maxlength="5000"
+                  placeholder="Answer as you would in the room…">{{ preserved_answer }}</textarea>
+        <p class="sp-hint">Hints are off. If the timer runs out mid-answer, your draft is
+           auto-submitted as-is.</p>
+
+        <div class="riv-mic" data-mic hidden>
+          <button type="button" class="riv-ctrl riv-ctrl-mic" data-btn-mic>🎙 Start microphone</button>
+          <button type="button" class="riv-ctrl" data-btn-clear>Clear transcript</button>
+          <span class="riv-mic-status" data-mic-status role="status"
+                aria-live="polite">Microphone off</span>
+        </div>
+        <p class="riv-mic-interim" data-mic-interim role="status"
+           aria-live="polite" hidden></p>
+
+        <div class="riv-submit-row">
+          <button type="submit" class="sp-btn sp-btn-primary" id="answer-submit">
+            Submit answer
+          </button>
+        </div>
+      </form>
+
+      <div class="riv-finish">
+        <form method="post" class="interview-finish-form"
+              action="{{ url_for('interview.finish', interview_id=interview.id) }}">
+          {{ csrf_token() }}
+          <button type="submit" class="riv-link-btn">End interview &amp; see results</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
 {% endif %}
 
 {% if view == 'pending' %}
-<header class="page-header">
-  <h1 class="page-title">Interview paused</h1>
-  <p class="page-subtitle">
-    Your last answer was saved, but the next question isn't ready yet.
-  </p>
-</header>
+<div class="riv-flow">
 
-<section class="card">
-  <div class="empty-state">
-    <p class="empty-state-title">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded so far</p>
-    <p class="empty-state-text">
-      The AI interviewer hit a temporary problem while preparing your follow-up.
-      Retry below — or end the session now and get your results for everything
-      answered so far.
-    </p>
-  </div>
-  <div class="quick-actions interview-pending-actions">
-    <form method="post"
-          action="{{ url_for('interview.continue_interview', interview_id=interview.id) }}">
-      {{ csrf_token() }}
-      <button type="submit" class="button button-primary button-block">
-        Try to continue
-      </button>
-    </form>
-    <form method="post"
-          action="{{ url_for('interview.finish', interview_id=interview.id) }}">
-      {{ csrf_token() }}
-      <button type="submit" class="button button-block">
-        End interview &amp; see results
-      </button>
-    </form>
-  </div>
-</section>
+  <section class="sp-hero" aria-labelledby="riv-pending-title">
+    <div class="sp-hero-ambient" aria-hidden="true"></div>
+    <div class="sp-hero-content">
+      <p class="sp-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Real Interview</p>
+      <h1 class="sp-hero-title" id="riv-pending-title">Interview paused</h1>
+      <p class="sp-hero-tagline">Your last answer was saved.</p>
+      <p class="sp-hero-sub">The next question isn't ready yet — retry, or end the session
+        and get your results for everything answered so far.</p>
+    </div>
+  </section>
+
+  <section class="sp-panel" aria-labelledby="riv-pending-status">
+    <div class="sp-panel-head">
+      <div>
+        <h2 class="sp-panel-title" id="riv-pending-status">Session on hold</h2>
+        <p class="sp-panel-sub">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded so far</p>
+      </div>
+    </div>
+    <p class="sp-feedback-text">The AI interviewer hit a temporary problem while preparing
+      your follow-up. Retry below — or end the session now.</p>
+    <div class="sp-next-actions riv-pending-actions">
+      <form method="post"
+            action="{{ url_for('interview.continue_interview', interview_id=interview.id) }}">
+        {{ csrf_token() }}
+        <button type="submit" class="sp-btn sp-btn-primary">Try to continue</button>
+      </form>
+      <form method="post"
+            action="{{ url_for('interview.finish', interview_id=interview.id) }}">
+        {{ csrf_token() }}
+        <button type="submit" class="sp-btn sp-btn-ghost">End interview &amp; see results</button>
+      </form>
+    </div>
+  </section>
+
+</div>
 {% endif %}
 
 {% if view == 'complete' %}
-<header class="page-header">
-  <h1 class="page-title">Interview complete</h1>
-  <p class="page-subtitle">
-    {{ type_label }} · {{ interview.role }} ·
-    {{ interview.difficulty | capitalize }} — here is your full evaluation.
-  </p>
-</header>
+<div class="riv-flow">
 
-<section class="card" aria-live="polite">
-  <div class="score-summary interview-result-summary">
-    <div class="score-overall">
-      <span class="stat-value">{{ overall_score | round(0) | int if overall_score is not none else '—' }}<span class="score-denominator">/100</span></span>
-      <span class="stat-label">Overall score</span>
-      <span class="stat-note">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded</span>
+  <section class="sp-hero" aria-labelledby="riv-done-title">
+    <div class="sp-hero-ambient" aria-hidden="true"></div>
+    <div class="sp-hero-content">
+      <p class="sp-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> Real Interview · Complete</p>
+      <h1 class="sp-hero-title" id="riv-done-title">Interview complete</h1>
+      <p class="sp-hero-sub">{{ type_label }} · {{ interview.role }} ·
+        {{ interview.difficulty | capitalize }}{% if company_preset %} ·
+        {{ company_preset.name }}{% endif %} — here is your full evaluation.</p>
     </div>
-    <ul class="score-list">
-      {% for key, label in dimensions %}
-      {% set value = averages.get(key) %}
-      {% if value is not none %}
-      <li class="score-item">
-        <span class="score-item-label">{{ label }}</span>
-        <span class="meter" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
-          <span class="meter-fill meter-{{ 'high' if value >= 75 else ('mid' if value >= 50 else 'low') }}"
-                style="width: {{ value | round(0) | int }}%;"></span>
-        </span>
-        <span class="score-item-value">{{ value | round(0) | int }}</span>
-      </li>
+  </section>
+
+  <section class="sp-panel" aria-live="polite">
+    <div class="riv-summary-grid">
+      <div class="riv-overall">
+        <span class="riv-score-value">{{ overall_score | round(0) | int if overall_score is not none else '—' }}<span class="riv-score-denominator">/100</span></span>
+        <span class="riv-score-label">Overall score</span>
+        <span class="riv-score-note">{{ graded_count }} answer{{ 's' if graded_count != 1 }} graded</span>
+        <span class="meter riv-overall-meter" aria-hidden="true"><span
+          class="meter-fill {{ 'meter-high' if (overall_score is not none and overall_score >= 75) else ('meter-mid' if (overall_score is not none and overall_score >= 50) else 'meter-low') }}"
+          data-fill="{{ overall_score | round(0) | int if overall_score is not none else 0 }}"></span></span>
+      </div>
+      <ul class="riv-dims">
+        {% for key, label in dimensions %}
+        {% set value = averages.get(key) %}
+        {% if value is not none %}
+        <li class="riv-dim">
+          <div class="sp-dim-line">
+            <span class="sp-dim-name">{{ label }}</span>
+            <span class="sp-dim-val">{{ value | round(0) | int }}</span>
+          </div>
+          <span class="sp-dim-track" role="img" aria-label="{{ label }}: {{ value | round(0) | int }} out of 100">
+            <span class="meter-fill {{ 'meter-high' if value >= 75 else ('meter-mid' if value >= 50 else 'meter-low') }}"
+                  data-fill="{{ value | round(0) | int }}"></span>
+          </span>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  {% for item in transcript %}
+  <section class="sp-panel riv-review-card">
+    <div class="sp-question-meta">
+      <span class="sp-badge sp-badge-accent">Q{{ item.sequence_order }}</span>
+      {% if item.question_type %}
+      <span class="sp-badge">{{ item.question_type | capitalize }}</span>
       {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
-</section>
+      {% if item.score is not none %}
+      <span class="sp-badge riv-score {{ 'riv-score-high' if item.score >= 75 else ('riv-score-mid' if item.score >= 50 else 'riv-score-low') }}">
+        {{ item.score | round(0) | int }}/100
+      </span>
+      {% else %}
+      <span class="sp-badge">Not answered</span>
+      {% endif %}
+    </div>
 
-{% for item in transcript %}
-<section class="card interview-review-card">
-  <div class="question-meta">
-    <span class="badge">Q{{ item.sequence_order }}</span>
-    {% if item.question_type %}
-    <span class="badge badge-muted">{{ item.question_type | capitalize }}</span>
+    <p class="sp-question-text">{{ item.question }}</p>
+
+    {% if item.user_answer is not none %}
+    <details class="sp-reveal-box" {% if loop.first %}open{% endif %}>
+      <summary>
+        <span class="sp-reveal-summary-label">Show your answer</span>
+        <span class="sp-reveal-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="sp-reveal-body">
+        <p class="sp-answer-text">{{ item.user_answer }}</p>
+      </div>
+    </details>
+
+    <h3 class="riv-block-title">Coach feedback</h3>
+    <p class="sp-feedback-text">{{ item.feedback }}</p>
+
+    {% if item.missing_points %}
+    <div class="sp-missing" role="note">
+      <h4 class="sp-missing-title">Missing points</h4>
+      <ul class="sp-missing-list">
+        {% for point in item.missing_points %}
+        <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+    </div>
     {% endif %}
-    {% if item.score is not none %}
-    <span class="badge interview-score-badge
-                 {{ 'is-high' if item.score >= 75 else ('is-mid' if item.score >= 50 else 'is-low') }}">
-      {{ item.score | round(0) | int }}/100
-    </span>
+
+    <details class="sp-reveal-box">
+      <summary>
+        <span class="sp-reveal-summary-label">Show model answer</span>
+        <span class="sp-reveal-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="sp-reveal-body">
+        <p class="sp-model-answer sp-answer-text">{{ item.model_answer }}</p>
+      </div>
+    </details>
     {% else %}
-    <span class="badge badge-muted">Not answered</span>
+    <p class="riv-skipped-note">The timer ran out before this question was answered,
+      so it was skipped in grading.</p>
     {% endif %}
-  </div>
+  </section>
+  {% endfor %}
 
-  <p class="ai-text question-text">{{ item.question }}</p>
-
-  {% if item.user_answer is not none %}
-  <details class="reveal" {% if loop.first %}open{% endif %}>
-    <summary>Show your answer</summary>
-    <div class="reveal-body">
-      <p class="user-answer-text">{{ item.user_answer }}</p>
+  <section class="sp-panel" aria-labelledby="riv-next-title">
+    <div class="sp-panel-head">
+      <div>
+        <h2 class="sp-panel-title" id="riv-next-title">What next?</h2>
+        <p class="sp-panel-sub">Turn this session into deliberate practice.</p>
+      </div>
     </div>
-  </details>
-
-  <h3 class="sub-heading">Coach feedback</h3>
-  <p class="ai-text">{{ item.feedback }}</p>
-
-  {% if item.missing_points %}
-  <h3 class="sub-heading">Missing points</h3>
-  <ul class="missing-list">
-    {% for point in item.missing_points %}
-    <li>{{ point }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  <details class="reveal">
-    <summary>Show model answer</summary>
-    <div class="reveal-body">
-      <p class="ai-text">{{ item.model_answer }}</p>
+    <div class="sp-next-actions">
+      <a class="sp-btn sp-btn-primary" href="{{ url_for('interview.config') }}">Run another interview</a>
+      <a class="sp-btn sp-btn-ghost" href="{{ url_for('practice.pick') }}">Practice your weak spots in Smart Practice</a>
+      <a class="sp-btn sp-btn-ghost" href="{{ url_for('history.detail', interview_id=interview.id) }}">View this session in your history</a>
     </div>
-  </details>
-  {% else %}
-  <p class="stat-note">The timer ran out before this question was answered,
-     so it was skipped in grading.</p>
-  {% endif %}
-</section>
-{% endfor %}
+  </section>
 
-<section class="card">
-  <h2 class="card-title">What next?</h2>
-  <div class="quick-actions">
-    <a class="button button-primary button-block"
-       href="{{ url_for('interview.config') }}">Run another interview</a>
-    <a class="button button-block" href="{{ url_for('practice.pick') }}">
-      Practice your weak spots in Smart Practice</a>
-    <a class="button button-block" href="{{ url_for('history.detail', interview_id=interview.id) }}">
-      View this session in your history</a>
-  </div>
-</section>
+</div>
 {% endif %}
 
 {% endblock %}
 
 {% block scripts %}
-{% if view == 'live' %}
+{% if view in ('config', 'live') %}
 <script src="{{ url_for('static', filename='js/interview.js') }}"></script>
 {% endif %}
 {% endblock %}

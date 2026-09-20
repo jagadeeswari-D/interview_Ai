@@ -1,0 +1,1168 @@
+/* ==========================================================================
+   InterviewIQ — Shared product pages (Replay, Resume, Analytics, Reports,
+   Profile, Settings, History).
+   Each page is scoped under its own body.page-* class. Component styles in
+   this file are intentionally unscoped because this stylesheet is only
+   linked by those templates via {% block styles %}.
+   Design language: near-black glass, electric #7c8cff accent, translucent
+   cards, ambient grid + glow — matching Dashboard & Roadmap.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Page tokens (dark + light) are defined once in theme.css and shared by
+   every product page.
+   -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   3.  Ambient backdrop — subtle grid + drifting glow (same as Dashboard).
+   -------------------------------------------------------------------------- */
+body.page-replay::before,
+body.page-resume::before,
+body.page-analytics::before,
+body.page-reports::before,
+body.page-profile::before,
+body.page-settings::before,
+body.page-history::before,
+body.page-achievements::before,
+body.page-leaderboard::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 88px 88px;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(120% 120% at 50% 0%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(120% 120% at 50% 0%, #000 30%, transparent 78%);
+  animation: pages-grid-drift 120s linear infinite;
+}
+
+body.page-replay::after,
+body.page-resume::after,
+body.page-analytics::after,
+body.page-reports::after,
+body.page-profile::after,
+body.page-settings::after,
+body.page-history::after,
+body.page-achievements::after,
+body.page-leaderboard::after {
+  content: "";
+  position: fixed;
+  top: -30vh;
+  left: 50%;
+  width: 120vw;
+  height: 70vh;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(closest-side, var(--glow-ring) 0%, transparent 72%);
+  opacity: 0.5;
+  transform: translateX(-50%);
+  animation: pages-light-breathe 18s ease-in-out infinite alternate;
+}
+
+@keyframes pages-grid-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 88px 88px; }
+}
+
+@keyframes pages-light-breathe {
+  from { opacity: 0.34; }
+  to   { opacity: 0.58; }
+}
+
+/* --------------------------------------------------------------------------
+   4.  Shell + content z-index and width (content sits above the ambient
+       backdrop just like the Dashboard).
+   -------------------------------------------------------------------------- */
+body.page-replay .app-shell,
+body.page-resume .app-shell,
+body.page-analytics .app-shell,
+body.page-reports .app-shell,
+body.page-profile .app-shell,
+body.page-settings .app-shell,
+body.page-history .app-shell,
+body.page-achievements .app-shell,
+body.page-leaderboard .app-shell,
+body.page-replay .app-topbar,
+body.page-resume .app-topbar,
+body.page-analytics .app-topbar,
+body.page-reports .app-topbar,
+body.page-profile .app-topbar,
+body.page-settings .app-topbar,
+body.page-history .app-topbar,
+body.page-achievements .app-topbar,
+body.page-leaderboard .app-topbar {
+  position: relative;
+  z-index: 1;
+}
+
+body.page-replay .content,
+body.page-resume .content,
+body.page-analytics .content,
+body.page-reports .content,
+body.page-profile .content,
+body.page-settings .content,
+body.page-history .content,
+body.page-achievements .content,
+body.page-leaderboard .content {
+  max-width: 1240px;
+  padding: clamp(24px, 3vw, 44px);
+}
+
+/* --------------------------------------------------------------------------
+   5.  Sidebar — translucent glass rail (same as Dashboard).
+   -------------------------------------------------------------------------- */
+body.page-replay .sidebar,
+body.page-resume .sidebar,
+body.page-analytics .sidebar,
+body.page-reports .sidebar,
+body.page-profile .sidebar,
+body.page-settings .sidebar,
+body.page-history .sidebar,
+body.page-achievements .sidebar,
+body.page-leaderboard .sidebar {
+  background: var(--sidebar-bg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-right-color: var(--border);
+}
+
+body.page-replay .brand-mark,
+body.page-resume .brand-mark,
+body.page-analytics .brand-mark,
+body.page-reports .brand-mark,
+body.page-profile .brand-mark,
+body.page-settings .brand-mark,
+body.page-history .brand-mark,
+body.page-achievements .brand-mark,
+body.page-leaderboard .brand-mark {
+  background: linear-gradient(135deg, var(--primary), #9b6cff);
+  color: var(--primary-contrast);
+  box-shadow: 0 6px 18px -6px var(--glow-core);
+}
+
+body.page-replay .nav-link.active,
+body.page-resume .nav-link.active,
+body.page-analytics .nav-link.active,
+body.page-reports .nav-link.active,
+body.page-profile .nav-link.active,
+body.page-settings .nav-link.active,
+body.page-history .nav-link.active,
+body.page-achievements .nav-link.active,
+body.page-leaderboard .nav-link.active {
+  background: var(--active-bg);
+  color: var(--primary-text);
+  box-shadow: inset 0 0 0 1px var(--primary-soft);
+}
+
+body.page-replay .avatar,
+body.page-resume .avatar,
+body.page-analytics .avatar,
+body.page-reports .avatar,
+body.page-profile .avatar,
+body.page-settings .avatar,
+body.page-history .avatar,
+body.page-achievements .avatar,
+body.page-leaderboard .avatar {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+/* ==========================================================================
+   6.  Shared page layout
+   ========================================================================== */
+.iq-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+/* ---- Top bar (hero header with greeting + profile shortcut) ---- */
+.iq-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+}
+
+.iq-topbar-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.iq-greeting {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.iq-topbar-sub {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ---- Profile shortcut pill ---- */
+.iq-profile-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 6px 12px 6px 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.iq-profile-shortcut:hover {
+  color: var(--text);
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+  text-decoration: none;
+}
+
+.iq-profile-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 0.8rem;
+}
+
+.iq-profile-shortcut-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ---- Hero section ---- */
+.iq-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(30px, 6vw, 60px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 6px);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 46%, transparent 100%),
+    radial-gradient(120% 120% at 88% 12%, var(--primary-soft) 0%, transparent 60%);
+}
+
+.iq-hero-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  background:
+    radial-gradient(closest-side, var(--primary-soft) 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(80% 90% at 85% 15%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(80% 90% at 85% 15%, #000 0%, transparent 70%);
+}
+
+.iq-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.iq-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--primary-text);
+  margin-bottom: var(--spacing-3);
+}
+
+.iq-hero-title {
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0 0 var(--spacing-3);
+  color: var(--text);
+}
+
+.iq-hero-sub {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  max-width: 54ch;
+  margin: 0 0 var(--spacing-5);
+  line-height: 1.6;
+}
+
+.iq-hero-sub strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.iq-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+}
+
+/* ---- Live dot (pulsing accent dot used in eyebrows) ---- */
+.iq-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 0 var(--glow-core);
+  animation: pages-pulse 2.4s ease-out infinite;
+}
+
+@keyframes pages-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(124, 140, 255, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(124, 140, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(124, 140, 255, 0); }
+}
+
+/* ==========================================================================
+   7.  Buttons — the iq-btn pill family (shared with Dashboard).
+   ========================================================================== */
+.iq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  padding: 14px 26px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.iq-btn:hover {
+  transform: translateY(-2px);
+}
+
+.iq-btn-primary {
+  background: linear-gradient(135deg, var(--primary), #9b6cff);
+  color: var(--primary-contrast);
+  border: none;
+  box-shadow: 0 16px 40px -16px var(--glow-core);
+}
+
+.iq-btn-primary:hover {
+  box-shadow: 0 22px 50px -16px var(--glow-core);
+  filter: brightness(1.05);
+  color: var(--primary-contrast);
+  text-decoration: none;
+}
+
+.iq-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.iq-btn-ghost:hover {
+  border-color: var(--primary-text);
+  color: var(--primary-text);
+  text-decoration: none;
+}
+
+/* ---- Legacy button overrides for pages ---- */
+body.page-replay .button-primary,
+body.page-resume .button-primary,
+body.page-analytics .button-primary,
+body.page-reports .button-primary,
+body.page-profile .button-primary,
+body.page-settings .button-primary,
+body.page-history .button-primary {
+  background: linear-gradient(135deg, var(--primary), #9b6cff);
+  box-shadow: 0 12px 32px -14px var(--glow-core);
+  color: var(--primary-contrast);
+}
+
+body.page-replay .button-primary:hover,
+body.page-resume .button-primary:hover,
+body.page-analytics .button-primary:hover,
+body.page-reports .button-primary:hover,
+body.page-profile .button-primary:hover,
+body.page-settings .button-primary:hover,
+body.page-history .button-primary:hover {
+  box-shadow: 0 18px 44px -14px var(--glow-core);
+  color: var(--primary-contrast);
+}
+
+/* ==========================================================================
+   8.  Panels / Cards — the iq-panel glass card.
+   ========================================================================== */
+.iq-panel {
+  padding: var(--spacing-6);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.iq-panel:hover {
+  border-color: color-mix(in srgb, var(--primary-text) 30%, transparent);
+  box-shadow: var(--shadow-lift);
+}
+
+.iq-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+  flex-wrap: wrap;
+}
+
+.iq-panel-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 2px;
+}
+
+.iq-panel-sub {
+  color: var(--text-secondary, var(--text-muted));
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+/* ---- Legacy .card → match the iq-panel look ---- */
+body.page-replay .card,
+body.page-resume .card,
+body.page-analytics .card,
+body.page-reports .card,
+body.page-profile .card,
+body.page-settings .card,
+body.page-history .card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-soft);
+  padding: var(--spacing-6);
+}
+
+/* Override page-header to look like hero strip */
+body.page-replay .page-header,
+body.page-resume .page-header,
+body.page-analytics .page-header,
+body.page-reports .page-header,
+body.page-profile .page-header,
+body.page-settings .page-header,
+body.page-history .page-header {
+  padding: clamp(24px, 5vw, 48px);
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid var(--border);
+  background: linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 46%, transparent 100%),
+    radial-gradient(120% 120% at 88% 12%, var(--primary-soft) 0%, transparent 60%);
+  position: relative;
+  overflow: hidden;
+}
+
+body.page-replay .page-header::after,
+body.page-resume .page-header::after,
+body.page-analytics .page-header::after,
+body.page-reports .page-header::after,
+body.page-profile .page-header::after,
+body.page-settings .page-header::after,
+body.page-history .page-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background: radial-gradient(closest-side, var(--primary-soft) 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(80% 90% at 85% 15%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(80% 90% at 85% 15%, #000 0%, transparent 70%);
+}
+
+body.page-replay .page-title,
+body.page-resume .page-title,
+body.page-analytics .page-title,
+body.page-reports .page-title,
+body.page-profile .page-title,
+body.page-settings .page-title,
+body.page-history .page-title {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+body.page-replay .page-subtitle,
+body.page-resume .page-subtitle,
+body.page-analytics .page-subtitle,
+body.page-reports .page-subtitle,
+body.page-profile .page-subtitle,
+body.page-settings .page-subtitle,
+body.page-history .page-subtitle {
+  position: relative;
+  z-index: 1;
+  color: var(--text-muted);
+  margin-top: var(--spacing-2);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 58ch;
+}
+
+/* ==========================================================================
+   9.  Shared element polish (badges, stat-note, score badges, headings,
+       empty state, history items, readiness table, heatmap, chart-wrap,
+       reveal, form fields) — adapt them cleanly to the new token palette.
+   ========================================================================== */
+
+/* Badges */
+.badge {
+  border-color: var(--primary-text);
+  background-color: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.badge-muted {
+  border-color: var(--border);
+  background-color: var(--bg-inset);
+  color: var(--text-muted);
+}
+
+/* Score badges */
+.interview-score-badge.is-high {
+  border-color: var(--success);
+  background-color: var(--success-soft);
+  color: var(--success);
+}
+
+.interview-score-badge.is-mid {
+  border-color: var(--warning);
+  background-color: var(--warning-soft);
+  color: var(--warning);
+}
+
+.interview-score-badge.is-low {
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Stat */
+.stat-note {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.stat-value {
+  color: var(--primary-text);
+}
+
+/* Headings */
+.sub-heading {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Empty state */
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: var(--spacing-6) var(--spacing-4);
+  text-align: center;
+}
+
+.empty-state-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-1);
+  color: var(--text);
+}
+
+.empty-state-text {
+  color: var(--text-muted);
+  font-size: 0.925rem;
+  margin: 0 auto;
+  max-width: 42ch;
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* History list */
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4) 0;
+  border-top: 1px solid var(--border);
+}
+
+.history-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.history-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  min-width: 0;
+}
+
+.history-item-link {
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.history-item-link:hover {
+  color: var(--primary-text);
+  text-decoration: underline;
+}
+
+.history-item-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-1);
+  flex-shrink: 0;
+}
+
+/* Replay nav */
+.replay-nav-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.replay-position {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.replay-jump {
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--border);
+}
+
+.replay-jump-link:hover,
+.replay-jump-link:focus-visible {
+  border-color: var(--primary-text);
+  color: var(--primary-text);
+}
+
+.replay-jump-link.is-current {
+  background-color: var(--primary);
+  color: var(--primary-contrast);
+  border-color: var(--primary);
+}
+
+/* Readiness */
+.readiness-summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-3);
+  margin: var(--spacing-4) 0;
+  flex-wrap: wrap;
+}
+
+.readiness-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--spacing-2);
+}
+
+.readiness-table th,
+.readiness-table td {
+  text-align: left;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.readiness-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Chart wrap */
+.chart-wrap {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+.chart-wrap canvas {
+  max-width: 100%;
+}
+
+/* Heatmap */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-3);
+}
+
+.heatmap-cell {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  background: var(--bg-inset);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.heatmap-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft), 0 0 20px -12px var(--glow-ring);
+}
+
+.heatmap-cell.is-high { border-color: var(--success); background: var(--success-soft); }
+.heatmap-cell.is-mid  { border-color: var(--warning); background: var(--warning-soft); }
+.heatmap-cell.is-low  { border-color: var(--danger);  background: var(--danger-soft); }
+
+.heatmap-skill {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.heatmap-score {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Trend list */
+.trend-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-3) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1) var(--spacing-4);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Badge cloud */
+.badge-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+/* List heading */
+.list-heading {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin: var(--spacing-4) 0 var(--spacing-2);
+}
+
+/* Plain list */
+.plain-list {
+  margin: 0 0 var(--spacing-4);
+  padding-left: var(--spacing-5);
+}
+
+.plain-list li {
+  margin-bottom: var(--spacing-1);
+  color: var(--text);
+}
+
+/* Divider */
+.soft-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--spacing-4) 0;
+}
+
+/* Card title row */
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Reveal (details accordion) */
+.reveal {
+  margin: var(--spacing-4) 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-inset);
+}
+
+.reveal summary {
+  cursor: pointer;
+  padding: var(--spacing-3) var(--spacing-4);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.reveal-body {
+  padding: 0 var(--spacing-4) var(--spacing-3);
+}
+
+/* AI text */
+.ai-text {
+  font-family: var(--font-coach);
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.question-text {
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+.user-answer-text {
+  white-space: pre-wrap;
+}
+
+.missing-list {
+  margin: var(--spacing-2) 0 0;
+  padding-left: var(--spacing-5);
+}
+
+.missing-list li {
+  margin-bottom: var(--spacing-1);
+}
+
+/* Forms — field / field-input / stack-form */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.field-input {
+  width: 100%;
+  max-width: 480px;
+  padding: 10px 14px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text);
+  font: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+textarea.field-input {
+  min-height: 90px;
+  resize: vertical;
+}
+
+select.field-input {
+  appearance: auto;
+}
+
+.field-hint {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.stack-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Inline form (resume generate row) */
+.inline-form {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.inline-form select {
+  min-width: 130px;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg, var(--bg-inset));
+  color: var(--text);
+  font: inherit;
+}
+
+.inline-form select:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring);
+}
+
+/* Nested section inside a panel (e.g. "Practice from this resume") */
+.iq-panel-inset {
+  margin-top: var(--spacing-4);
+  padding: var(--spacing-5);
+  border-radius: var(--radius);
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+}
+
+/* Reset the legacy .question-meta margin when embedded in a panel head */
+.iq-panel-sub-question-meta {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   10.  Readiness ring (Dashboard-style circular metric)
+   ========================================================================== */
+.iq-readiness {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-5);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-5);
+  padding: var(--spacing-5);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  max-width: 720px;
+}
+
+.iq-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 108px;
+  height: 108px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary) var(--r, 0%), var(--border) 0);
+}
+
+.iq-ring::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--bg-inset);
+}
+
+.iq-ring .stat-value {
+  position: relative;
+  z-index: 1;
+  font-size: 1.7rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.iq-readiness-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.iq-readiness-cap {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   11.  Scroll reveal
+   ========================================================================== */
+.iq-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.iq-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ==========================================================================
+    12.  Analytics chart polish — meta chips, tier legend, tone pill,
+   gap-fitted heatmap rows, horizon-scrolling readiness table.
+   ========================================================================== */
+
+/* Panel-head summary chips (sessions/range/skills/average) */
+.iq-panel-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-1) var(--spacing-2);
+  min-height: 30px;
+  max-width: 100%;
+  margin-left: auto;
+}
+
+.iq-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-inset);
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.iq-meta-chip strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Tier legend (matches heatmap cells + chart bar colours) */
+.iq-tier-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2) var(--spacing-4);
+  margin: var(--spacing-2) 0 0;
+}
+
+.iq-tier-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.iq-tier-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.iq-tier-legend-swatch.is-high { background: var(--success); }
+.iq-tier-legend-swatch.is-mid  { background: var(--warning); }
+.iq-tier-legend-swatch.is-low  { background: var(--danger); }
+
+/* Readiness tone pill */
+.iq-tone-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border-radius: 999px;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+}
+
+.iq-tone-pill.is-high { color: var(--success); background: var(--success-soft); border-color: rgba(66, 217, 160, 0.35); }
+.iq-tone-pill.is-mid  { color: var(--warning); background: var(--warning-soft); border-color: rgba(231, 168, 75, 0.35); }
+.iq-tone-pill.is-low  { color: var(--danger);  background: var(--danger-soft);  border-color: rgba(240, 120, 111, 0.35); }
+
+/* Soft glow under the readiness ring (Dashboard-style anchor) */
+.iq-ring {
+  box-shadow: 0 0 36px -14px var(--glow-ring);
+}
+
+/* Horizon-scrolling readiness table on narrow screens */
+.readiness-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-inset);
+  margin-top: var(--spacing-4);
+}
+
+.readiness-table-wrap .readiness-table {
+  margin-top: 0;
+  min-width: 540px;
+}
+
+.readiness-table-wrap .readiness-table th:first-child,
+.readiness-table-wrap .readiness-table td:first-child {
+  padding-left: var(--spacing-4);
+}
+
+.readiness-table-wrap .readiness-table th:last-child,
+.readiness-table-wrap .readiness-table td:last-child {
+  padding-right: var(--spacing-4);
+}
+
+/* ==========================================================================
+   13.  Responsive
+   ========================================================================== */
+@media (max-width: 760px) {
+  .iq-page { gap: var(--spacing-4); }
+  .iq-hero { padding: var(--spacing-5); }
+  .iq-hero-actions .iq-btn { width: 100%; }
+  .iq-panel { padding: var(--spacing-5); }
+  .history-item { flex-direction: column; align-items: flex-start; }
+  .history-item-score { flex-direction: row; align-items: center; }
+  .chart-wrap { height: 220px; }
+  .iq-panel-meta { margin-left: 0; }
+}
+
+@media (max-width: 560px) {
+  .iq-topbar { align-items: flex-start; }
+  .iq-hero { padding: var(--spacing-4); }
+  .iq-hero-actions .iq-btn { width: 100%; }
+  .heatmap-grid { grid-template-columns: 1fr 1fr; }
+  .iq-readiness { max-width: none; }
+  .iq-tier-legend { gap: var(--spacing-1) var(--spacing-3); }
+  .iq-meta-chip { white-space: normal; }
+}
+
+/* ==========================================================================
+   14.  Respect reduced motion — all reveal + animation disabled
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .iq-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

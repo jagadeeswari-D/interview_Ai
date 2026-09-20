@@ -49,6 +49,7 @@ def _migrate_schema(db):
     additions = (
         ("question_limit", "INTEGER NOT NULL DEFAULT 0"),
         ("duration_minutes", "INTEGER NOT NULL DEFAULT 0"),
+        ("company_key", "TEXT"),
     )
     for name, declaration in additions:
         if name not in columns:

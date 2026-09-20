@@ -1,0 +1,1097 @@
+/* ==========================================================================
+   InterviewIQ — Learning Roadmap (redesigned).
+   Scoped under body.page-roadmap. Reuses the SAME visual language as the
+   Dashboard (near-black glass, electric #7C8CFF accent, hairlines, ambient
+   grid + glow) by re-declaring the identical page tokens, so the Roadmap
+   and Dashboard read as one product. Other pages are untouched.
+   Dynamic values are read from data-* attributes by roadmap.js / main.js
+   via the CSSOM (style-src 'self' blocks inline style=""), identical to the
+   dashboard/practice pages.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Page tokens — defined once in theme.css (shared product identity).
+   This page only adds its layout behaviour: clip horizontal overflow so the
+   ambient grid/glow pseudos never scroll the body.
+   -------------------------------------------------------------------------- */
+body.page-roadmap {
+  overflow-x: clip;
+}
+
+/* Subtle ambient grid + light drift, exactly like the Dashboard. */
+body.page-roadmap::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 88px 88px;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(120% 120% at 50% 0%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(120% 120% at 50% 0%, #000 30%, transparent 78%);
+  animation: iq-grid-drift 120s linear infinite;
+}
+
+body.page-roadmap::after {
+  content: "";
+  position: fixed;
+  top: -30vh;
+  left: 50%;
+  width: 120vw;
+  height: 70vh;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(closest-side, var(--glow-ring) 0%, transparent 72%);
+  opacity: 0.5;
+  transform: translateX(-50%);
+  animation: iq-light-breathe 18s ease-in-out infinite alternate;
+}
+
+@keyframes iq-grid-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 88px 88px; }
+}
+
+@keyframes iq-light-breathe {
+  from { opacity: 0.34; }
+  to   { opacity: 0.58; }
+}
+
+/* Shell sits above the ambient layers. */
+body.page-roadmap .app-shell,
+body.page-roadmap .app-topbar {
+  position: relative;
+  z-index: 1;
+}
+
+body.page-roadmap .content {
+  max-width: 1240px;
+  padding: clamp(24px, 3vw, 44px);
+}
+
+/* Sidebar glass rail — matches the Dashboard. */
+body.page-roadmap .sidebar {
+  background: var(--sidebar-bg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-right-color: var(--border);
+}
+
+body.page-roadmap .brand-mark {
+  background: linear-gradient(135deg, var(--primary), #9b6cff);
+  color: var(--primary-contrast);
+  box-shadow: 0 6px 18px -6px var(--glow-core);
+}
+
+body.page-roadmap .nav-link.active {
+  background: var(--active-bg);
+  color: var(--primary-text);
+  box-shadow: inset 0 0 0 1px var(--primary-soft);
+}
+
+body.page-roadmap .avatar {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+/* ==========================================================================
+   Page layout
+   ========================================================================== */
+body.page-roadmap .rm-flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+/* ---- Scroll reveal (powered by roadmap.js) ---- */
+.rm-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.rm-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---- Hero ---- */
+body.page-roadmap .rm-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(36px, 7vw, 68px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 6px);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 46%, transparent 100%),
+    radial-gradient(120% 120% at 88% 12%, var(--primary-soft) 0%, transparent 60%);
+}
+
+body.page-roadmap .rm-hero-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  background: radial-gradient(closest-side, var(--primary-soft) 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(80% 90% at 85% 15%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(80% 90% at 85% 15%, #000 0%, transparent 70%);
+}
+
+/* Decorative SVG path overlay on the hero — adds depth without content */
+body.page-roadmap .rm-hero-deco {
+  position: absolute;
+  right: -2%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(160px, 22vw, 320px);
+  height: auto;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.page-roadmap .rm-hero-deco path {
+  stroke: var(--primary);
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  transition: stroke-dashoffset 2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+body.page-roadmap .rm-hero.is-in .rm-hero-deco path {
+  stroke-dashoffset: 0;
+}
+
+body.page-roadmap .rm-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+body.page-roadmap .rm-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--primary-text);
+  margin-bottom: var(--spacing-3);
+}
+
+body.page-roadmap .rm-hero-title {
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0 0 var(--spacing-2);
+  color: var(--text);
+}
+
+body.page-roadmap .rm-hero-tagline {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 var(--spacing-2);
+}
+
+body.page-roadmap .rm-hero-sub {
+  color: var(--text-muted);
+  font-size: 1.02rem;
+  max-width: 56ch;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Live dot pulse — matches the Dashboard. */
+.iq-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 0 var(--glow-core);
+  animation: iq-pulse 2.4s ease-out infinite;
+}
+
+@keyframes iq-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(124, 140, 255, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(124, 140, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(124, 140, 255, 0); }
+}
+
+/* ==========================================================================
+   Progress card
+   ========================================================================== */
+body.page-roadmap .rm-progress-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-6);
+  flex-wrap: wrap;
+  padding: var(--spacing-6);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.page-roadmap .rm-progress-card:hover {
+  border-color: color-mix(in srgb, var(--primary-text) 30%, transparent);
+  box-shadow: var(--shadow-soft), 0 0 40px -16px var(--glow-ring);
+}
+
+body.page-roadmap .rm-progress-main {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+body.page-roadmap .rm-progress-head {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--spacing-3);
+}
+
+body.page-roadmap .rm-progress-count {
+  font-size: 3.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary-text);
+}
+
+body.page-roadmap .rm-progress-count .score-denominator {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-left: 3px;
+}
+
+body.page-roadmap .rm-progress-head .stat-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 6px;
+}
+
+/* Meter — honored by main.js via data-fill (CSP-safe). */
+body.page-roadmap .roadmap-meter {
+  display: block;
+  width: 100%;
+  height: 12px;
+  margin-bottom: var(--spacing-3);
+  border-radius: 999px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+body.page-roadmap .meter-fill {
+  width: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 0 18px -4px var(--glow-core);
+  transition: width 1.1s cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 0.25s ease;
+}
+
+body.page-roadmap .meter-fill.meter-high {
+  background: linear-gradient(90deg, var(--success), var(--primary-hover));
+}
+
+body.page-roadmap .meter-fill.meter-mid {
+  background: linear-gradient(90deg, var(--warning), var(--primary-hover));
+}
+
+body.page-roadmap .meter-fill.meter-low {
+  background: linear-gradient(90deg, var(--danger), var(--primary-hover));
+}
+
+/* Animated glow on progress bar when filled */
+body.page-roadmap .meter-fill.meter-animating {
+  animation: rm-meter-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes rm-meter-glow {
+  from { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 18px -4px var(--glow-core); }
+  to   { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 28px -2px var(--glow-core); }
+}
+
+body.page-roadmap .rm-progress-side {
+  flex: 1 1 300px;
+  min-width: 0;
+  padding-left: var(--spacing-6);
+  border-left: 1px solid var(--border);
+}
+
+body.page-roadmap .rm-note {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin: 0 0 var(--spacing-2);
+}
+
+body.page-roadmap .rm-note-strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+body.page-roadmap .rm-chip {
+  display: inline-flex;
+  margin: 2px 2px 0 0;
+}
+
+body.page-roadmap .roadmap-regenerate {
+  margin-top: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+body.page-roadmap .rm-regenerate {
+  border-radius: 999px;
+}
+
+body.page-roadmap .rm-hint {
+  font-size: 0.78rem;
+}
+
+body.page-roadmap .rm-regenerate:hover {
+  border-color: var(--primary-text);
+  color: var(--primary-text);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   Company context selector (shared _company_select.html partial).
+   Mirrors the sp-* field styles from practice.css, scoped to this page so the
+   same partial renders consistently here without loading practice.css (which
+   also carries page-practice-only body rules we do not want on the roadmap).
+   -------------------------------------------------------------------------- */
+body.page-roadmap .sp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+body.page-roadmap .sp-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+body.page-roadmap .sp-select-wrap {
+  position: relative;
+  display: block;
+}
+
+body.page-roadmap .sp-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 12px 42px 12px 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  background: var(--input-bg, var(--bg-inset));
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+body.page-roadmap .sp-select option {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+body.page-roadmap .sp-select:hover {
+  border-color: var(--border-strong);
+}
+
+body.page-roadmap .sp-select:focus {
+  outline: none;
+  border-color: var(--primary-text);
+  box-shadow: var(--focus-ring), 0 0 24px -6px var(--glow-core);
+}
+
+body.page-roadmap .sp-select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color 0.15s ease;
+}
+
+body.page-roadmap .sp-select-wrap:hover::after {
+  border-color: var(--text);
+}
+
+body.page-roadmap .sp-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+body.page-roadmap .sp-hint-muted {
+  opacity: 0.75;
+}
+
+/* ==========================================================================
+   Journey / timeline
+   ========================================================================== */
+body.page-roadmap .rm-journey-wrap {
+  padding: var(--spacing-2) 0;
+}
+
+body.page-roadmap .rm-journey-head {
+  margin: 0 0 var(--spacing-5);
+}
+
+body.page-roadmap .rm-journey-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+}
+
+body.page-roadmap .rm-journey-title span {
+  color: var(--primary-text);
+}
+
+body.page-roadmap .rm-journey-sub {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+/* Status summary row — counts of completed vs pending */
+body.page-roadmap .rm-status-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+
+body.page-roadmap .rm-status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+body.page-roadmap .rm-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+body.page-roadmap .rm-status-dot.is-completed {
+  background: var(--success);
+  box-shadow: 0 0 8px -2px var(--success-soft);
+}
+
+body.page-roadmap .rm-status-dot.is-pending {
+  background: var(--primary-soft);
+  border: 1.5px solid var(--primary-text);
+}
+
+body.page-roadmap .rm-status-dot.is-total {
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+body.page-roadmap .rm-status-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* The ordered list — a vertical timeline that keeps semantic order. */
+body.page-roadmap .rm-journey {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  position: relative;
+}
+
+/* Connecting path drawn behind the node column. */
+body.page-roadmap .rm-journey::before {
+  content: "";
+  position: absolute;
+  top: 34px;
+  bottom: 34px;
+  left: 27px;
+  width: 2px;
+  background: linear-gradient(180deg,
+    var(--primary-soft) 0%,
+    color-mix(in srgb, var(--primary-text) 18%, transparent) 40%,
+    var(--border) 100%);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+body.page-roadmap .rm-journey.is-in::before {
+  transform: scaleY(1);
+}
+
+/* ---- Phase card ---- */
+body.page-roadmap .rm-phase {
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+  padding: var(--spacing-5);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Subtle bottom accent line on hover — matches Dashboard quick-action cards */
+body.page-roadmap .rm-phase::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  border-radius: 0 0 calc(var(--radius) + 2px) calc(var(--radius) + 2px);
+  background: linear-gradient(90deg, var(--primary), #9b6cff);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+}
+
+body.page-roadmap .rm-journey.is-in .rm-phase {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggered entrance via nth-of-type (no inline styles — CSP-safe). */
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(1) { transition-delay: 0.06s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(2) { transition-delay: 0.14s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(3) { transition-delay: 0.22s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(4) { transition-delay: 0.30s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(5) { transition-delay: 0.38s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(6) { transition-delay: 0.46s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(7) { transition-delay: 0.54s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(8) { transition-delay: 0.62s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(9) { transition-delay: 0.70s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(10) { transition-delay: 0.78s; }
+body.page-roadmap .rm-journey.is-in .rm-phase:nth-of-type(n+11) { transition-delay: 0.86s; }
+
+body.page-roadmap .rm-phase:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--primary-text) 45%, transparent);
+  box-shadow: var(--shadow-lift);
+}
+
+body.page-roadmap .rm-phase:hover::after {
+  transform: scaleX(1);
+}
+
+body.page-roadmap .rm-phase.is-completed {
+  border-color: color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+body.page-roadmap .rm-phase.is-completed:hover {
+  border-color: var(--success);
+}
+
+body.page-roadmap .rm-phase.is-completed:hover::after {
+  background: linear-gradient(90deg, var(--success), var(--primary));
+}
+
+/* ---- Phase node (timeline marker) ---- */
+body.page-roadmap .rm-phase-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-inset);
+  color: var(--text-muted);
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 0.3s ease, background-color 0.3s ease,
+    color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.page-roadmap .rm-phase:hover .rm-phase-node {
+  transform: scale(1.08);
+}
+
+body.page-roadmap .rm-node-num {
+  font-weight: 800;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary-text);
+  transition: transform 0.3s ease;
+}
+
+body.page-roadmap .rm-phase:hover .rm-node-num {
+  transform: scale(1.05);
+}
+
+body.page-roadmap .rm-node-check {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--success);
+}
+
+body.page-roadmap .rm-phase.is-completed .rm-phase-node {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
+  box-shadow: 0 0 20px -6px var(--success-soft);
+}
+
+/* Subtle shimmer on completed nodes */
+body.page-roadmap .rm-phase.is-completed .rm-phase-node::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+body.page-roadmap .rm-phase.is-completed:hover .rm-phase-node::after {
+  opacity: 1;
+}
+
+/* ---- Phase body ---- */
+body.page-roadmap .rm-phase-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  min-width: 0;
+}
+
+body.page-roadmap .rm-phase-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+body.page-roadmap .rm-phase-day {
+  border-radius: 999px;
+}
+
+body.page-roadmap .rm-phase-title {
+  font-size: 1.18rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+}
+
+body.page-roadmap .rm-phase:hover .rm-phase-title {
+  color: var(--text);
+}
+
+body.page-roadmap .roadmap-status-badge.is-done {
+  background: var(--success-soft);
+  color: var(--success);
+  border-color: var(--success);
+  border-radius: 999px;
+}
+
+/* ---- Collapsible focus (native <details> — fully accessible, CSP-safe) ---- */
+body.page-roadmap .rm-phase-details {
+  width: 100%;
+}
+
+body.page-roadmap .rm-phase-summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary-text);
+  user-select: none;
+  border-radius: var(--radius-sm);
+  padding: 4px 0;
+  transition: color 0.18s ease;
+}
+
+body.page-roadmap .rm-phase-summary::-webkit-details-marker {
+  display: none;
+}
+
+body.page-roadmap .rm-phase-summary:hover {
+  color: var(--primary-text-hover);
+}
+
+body.page-roadmap .rm-phase-summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+body.page-roadmap .rm-chevron {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+body.page-roadmap .rm-phase-details[open] .rm-chevron {
+  transform: rotate(-135deg);
+}
+
+body.page-roadmap .rm-phase-focus {
+  margin: var(--spacing-2) 0 0;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 62ch;
+  padding: var(--spacing-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  animation: rm-focus-in 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes rm-focus-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---- Phase actions ---- */
+body.page-roadmap .rm-phase-actions {
+  margin-top: var(--spacing-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+body.page-roadmap .rm-practice-btn {
+  border-radius: 999px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+body.page-roadmap .rm-practice-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px var(--glow-core);
+}
+
+/* ---- Toggle (progress checkbox) — preserved, matched to theme ---- */
+body.page-roadmap .roadmap-toggle-form {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+body.page-roadmap .roadmap-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--bg-inset);
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+body.page-roadmap .roadmap-toggle:hover,
+body.page-roadmap .roadmap-toggle:focus-visible {
+  border-color: var(--primary-text);
+  outline: none;
+  box-shadow: var(--focus-ring);
+  transform: scale(1.1);
+}
+
+body.page-roadmap .roadmap-toggle .checkmark {
+  width: 14px;
+  height: 8px;
+  border-left: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  transform: rotate(-45deg) translate(1px, -2px);
+  transition: border-color 0.2s ease;
+}
+
+body.page-roadmap .roadmap-toggle.is-checked {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+
+body.page-roadmap .roadmap-toggle.is-checked .checkmark {
+  border-left-color: var(--success);
+  border-bottom-color: var(--success);
+}
+
+/* Subtle completion pop animation */
+body.page-roadmap .roadmap-toggle.is-checked {
+  animation: rm-check-pop 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes rm-check-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   Empty state
+   ========================================================================== */
+body.page-roadmap .rm-empty {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-soft);
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Decorative gradient shimmer behind empty state */
+body.page-roadmap .rm-empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 70% 60% at 50% 20%,
+    var(--primary-soft) 0%,
+    transparent 70%
+  );
+  opacity: 0.5;
+}
+
+body.page-roadmap .rm-empty-state {
+  border: none;
+  padding: clamp(40px, 8vw, 72px) var(--spacing-5);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+body.page-roadmap .rm-empty-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--primary-text);
+  margin: 0 0 var(--spacing-3);
+}
+
+body.page-roadmap .rm-empty-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 var(--spacing-2);
+}
+
+body.page-roadmap .rm-empty-text {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0 auto var(--spacing-4);
+  max-width: 46ch;
+  line-height: 1.6;
+}
+
+body.page-roadmap .quick-actions {
+  margin-top: var(--spacing-2);
+}
+
+body.page-roadmap .rm-empty-actions {
+  gap: var(--spacing-3);
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+body.page-roadmap .rm-empty-btn {
+  border-radius: 999px;
+}
+
+body.page-roadmap .rm-empty-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 760px) {
+  body.page-roadmap .rm-flow {
+    gap: var(--spacing-4);
+  }
+
+  body.page-roadmap .rm-hero {
+    padding: var(--spacing-5);
+  }
+
+  body.page-roadmap .rm-hero-deco {
+    display: none;
+  }
+
+  body.page-roadmap .rm-progress-card {
+    padding: var(--spacing-5);
+  }
+
+  body.page-roadmap .rm-progress-side {
+    padding-left: 0;
+    padding-top: var(--spacing-4);
+    border-left: none;
+    border-top: 1px solid var(--border);
+    flex-basis: 100%;
+  }
+
+  body.page-roadmap .rm-status-summary {
+    flex-wrap: wrap;
+    gap: var(--spacing-2) var(--spacing-4);
+  }
+}
+
+@media (max-width: 560px) {
+  body.page-roadmap .rm-phase {
+    grid-template-columns: 44px 1fr;
+    gap: var(--spacing-3);
+    padding: var(--spacing-4);
+  }
+
+  body.page-roadmap .rm-phase-node {
+    width: 44px;
+    height: 44px;
+  }
+
+  body.page-roadmap .rm-phase-node .rm-node-num {
+    font-size: 1rem;
+  }
+
+  body.page-roadmap .rm-journey::before {
+    left: 21px;
+  }
+
+  body.page-roadmap .roadmap-toggle-form {
+    grid-column: 1 / 2;
+    grid-row: 2;
+    align-self: start;
+    justify-self: center;
+  }
+
+  body.page-roadmap .rm-phase-body {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+
+  body.page-roadmap .rm-phase-title {
+    font-size: 1.08rem;
+  }
+
+  body.page-roadmap .rm-progress-count {
+    font-size: 2.6rem;
+  }
+
+  body.page-roadmap .rm-status-summary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  body.page-roadmap .rm-phase {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-roadmap .rm-phase-body {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  body.page-roadmap .rm-phase-node {
+    margin: 0 auto;
+  }
+
+  body.page-roadmap .roadmap-toggle-form {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  body.page-roadmap .rm-status-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Respect users who opt out of motion. */
+@media (prefers-reduced-motion: reduce) {
+  body.page-roadmap *,
+  body.page-roadmap *::before,
+  body.page-roadmap *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  body.page-roadmap .rm-reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.page-roadmap .rm-journey::before {
+    transform: scaleY(1);
+  }
+
+  body.page-roadmap .rm-journey .rm-phase {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.page-roadmap .rm-phase::after {
+    transform: none;
+  }
+}

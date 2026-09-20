@@ -1,107 +1,181 @@
 {% extends "base.html" %}
 {% block title %}Learning Roadmap — InterviewIQ{% endblock %}
+{% block body_class %}page-roadmap{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/roadmap.css') }}">
+{% endblock %}
 
 {% block content %}
-<header class="page-header">
-  <h1 class="page-title">Learning Roadmap</h1>
-  <p class="page-subtitle">
-    A day-by-day plan built from your weakest skills. Work through it,
-    check days off, and jump straight back into practice.
-  </p>
-</header>
+<div class="rm-flow">
 
-{% if total %}
+  <!-- 1 · ROADMAP HERO -->
+  <section class="rm-hero rm-reveal" aria-labelledby="rm-hero-title">
+    <div class="rm-hero-ambient" aria-hidden="true"></div>
+    <svg class="rm-hero-deco" viewBox="0 0 200 300" aria-hidden="true">
+      <path d="M40 280 C40 220, 160 200, 160 150 C160 100, 40 80, 40 30"
+            stroke-linecap="round"/>
+    </svg>
+    <div class="rm-hero-content">
+      <p class="rm-eyebrow"><span class="iq-live-dot" aria-hidden="true"></span> AI Interview Coach</p>
+      <h1 class="rm-hero-title" id="rm-hero-title">Learning Roadmap</h1>
+      <p class="rm-hero-tagline">Your personal day-by-day plan to close each weak skill.</p>
+      <p class="rm-hero-sub">
+        Built from your weakest answers and planned in the right order —
+        work through it, check days off, and jump straight back into practice.
+      </p>
+    </div>
+  </section>
 
-<section class="card" aria-label="Roadmap progress">
-  <div class="roadmap-progress-head">
-    <span class="stat-value">{{ completed }}<span class="score-denominator">/{{ total }}</span></span>
-    <span class="stat-label">Days completed</span>
-  </div>
-  <span class="meter roadmap-meter" role="progressbar"
-        aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"
-        aria-label="Roadmap progress: {{ percent }} percent complete">
-    <span class="meter-fill meter-{{ 'high' if percent >= 75 else ('mid' if percent >= 50 else 'low') }}"
-          style="width: {{ percent }}%;"></span>
-  </span>
+  {% if total %}
 
-  {% if skills_context %}
-  <p class="stat-note">Built from your weak skills: {{ skills_context }}</p>
-  {% endif %}
-  {% if memory and memory.repeated_mistakes %}
-  <p class="stat-note">Repeated mistakes planned first:
-    {% for skill in memory.repeated_mistakes %}<span class="badge badge-muted">{{ skill }}</span>{% endfor %}
-  </p>
-  {% endif %}
+  <!-- 2 · ROADMAP PROGRESS -->
+  <section class="rm-progress-card rm-reveal" aria-label="Roadmap progress">
+    <div class="rm-progress-main">
+      <div class="rm-progress-head">
+        <span class="stat-value rm-progress-count">{{ completed }}<span class="score-denominator">/{{ total }}</span></span>
+        <span class="stat-label">Days completed</span>
+      </div>
 
-  <form method="post" action="{{ url_for('roadmap.generate') }}" class="roadmap-regenerate">
-    {{ csrf_token() }}
-    <button type="submit" class="button button-ghost button-small">Regenerate from current weaknesses</button>
-    <span class="field-hint">Replaces this plan and resets progress.</span>
-  </form>
-</section>
+      <span class="meter roadmap-meter" role="progressbar"
+            aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"
+            aria-label="Roadmap progress: {{ percent }} percent complete">
+        <span class="meter-fill meter-{{ 'high' if percent >= 75 else ('mid' if percent >= 50 else 'low') }}"
+              data-fill="{{ percent }}"></span>
+      </span>
+    </div>
 
-<ol class="roadmap-days">
-  {% for day in days %}
-  <li class="card roadmap-day {{ 'is-completed' if day.status == 'completed' }}" id="day-{{ day.id }}">
-    <div class="roadmap-day-main">
-      <div class="question-meta">
-        <span class="badge">Day {{ day.day_number }}</span>
-        <span class="badge badge-muted roadmap-status-badge
-                     {{ 'is-done' if day.status == 'completed' }}">
-          {{ 'Completed' if day.status == 'completed' else 'Pending' }}
+    <div class="rm-progress-side">
+      {% if skills_context %}
+      <p class="stat-note rm-note">Built from your weak skills: <span class="rm-note-strong">{{ skills_context }}</span></p>
+      {% endif %}
+      {% if memory and memory.repeated_mistakes %}
+      <p class="stat-note rm-note">Repeated mistakes planned first:
+        {% for skill in memory.repeated_mistakes %}<span class="badge badge-muted rm-chip">{{ skill }}</span>{% endfor %}
+      </p>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('roadmap.generate') }}" class="roadmap-regenerate">
+        {{ csrf_token() }}
+        {% include "_company_select.html" %}
+        <button type="submit" class="button button-ghost button-small rm-regenerate">Regenerate from current weaknesses</button>
+        <span class="field-hint rm-hint">Replaces this plan and resets progress.</span>
+      </form>
+    </div>
+  </section>
+
+  <!-- 3 · ROADMAP JOURNEY / PHASES -->
+  <div class="rm-journey-wrap">
+    <div class="rm-journey-head rm-reveal">
+      <h2 class="rm-journey-title">Your journey <span aria-hidden="true">&rarr;</span></h2>
+      <p class="rm-journey-sub">Work through each phase in order. Mark a day complete when you are confident.</p>
+      <div class="rm-status-summary" aria-label="Journey status summary">
+        <span class="rm-status-item">
+          <span class="rm-status-dot is-completed" aria-hidden="true"></span>
+          <span class="rm-status-count">{{ completed }}</span> completed
+        </span>
+        <span class="rm-status-item">
+          <span class="rm-status-dot is-pending" aria-hidden="true"></span>
+          <span class="rm-status-count">{{ total - completed }}</span> remaining
+        </span>
+        <span class="rm-status-item">
+          <span class="rm-status-dot is-total" aria-hidden="true"></span>
+          <span class="rm-status-count">{{ total }}</span> total
         </span>
       </div>
-      <h2 class="roadmap-day-topic">{{ day.topic }}</h2>
-      <p class="ai-text roadmap-day-focus">{{ day.practice_focus }}</p>
-      <a class="button button-small button-primary"
-         href="{{ url_for('practice.pick', topic=day.topic, difficulty='medium') }}">Practice this topic</a>
     </div>
 
-    <form method="post" action="{{ url_for('roadmap.toggle', day_id=day.id) }}"
-          class="roadmap-toggle-form">
-      {{ csrf_token() }}
-      <input type="hidden" name="state"
-             value="{{ 'pending' if day.status == 'completed' else 'completed' }}">
-      <button type="submit" class="roadmap-toggle {{ 'is-checked' if day.status == 'completed' }}"
-              aria-pressed="{{ 'true' if day.status == 'completed' else 'false' }}"
-              aria-label="Mark day {{ day.day_number }} as
-                          {{ 'pending' if day.status == 'completed' else 'completed' }}">
-        <span class="checkmark" aria-hidden="true"></span>
-      </button>
-    </form>
-  </li>
-  {% endfor %}
-</ol>
+    <ol class="roadmap-days rm-journey rm-reveal">
+      {% for day in days %}
+      <li class="card roadmap-day rm-phase {{ 'is-completed' if day.status == 'completed' }}"
+          id="day-{{ day.id }}">
+        <div class="rm-phase-node" aria-hidden="true">
+          {% if day.status == 'completed' %}
+          <span class="rm-node-check">&#10003;</span>
+          {% else %}
+          <span class="rm-node-num">{{ day.day_number }}</span>
+          {% endif %}
+        </div>
 
-{% else %}
+        <div class="rm-phase-body">
+          <div class="rm-phase-meta">
+            <span class="badge rm-phase-day">Day {{ day.day_number }}</span>
+            <span class="badge badge-muted roadmap-status-badge {{ 'is-done' if day.status == 'completed' }}">
+              {{ 'Completed' if day.status == 'completed' else 'Pending' }}
+            </span>
+          </div>
 
-<section class="card">
-  <div class="empty-state">
-    {% if has_weaknesses %}
-    <p class="empty-state-title">Your plan is one click away</p>
-    <p class="empty-state-text">
-      The coach has spotted weak areas in your answers. Generate a
-      day-by-day roadmap that tackles them in order, starting with your
-      most repeated mistakes.
-    </p>
-    <form method="post" action="{{ url_for('roadmap.generate') }}" class="quick-actions">
-      {{ csrf_token() }}
-      <button type="submit" class="button button-primary button-block">Generate my learning roadmap</button>
-    </form>
-    {% else %}
-    <p class="empty-state-title">No weak spots to work on yet</p>
-    <p class="empty-state-text">
-      Your roadmap is generated from the weaknesses the AI coach detects in
-      your answers. Finish some Smart Practice questions or a timed Real
-      Interview first — then come back for your personalized plan.
-    </p>
-    <div class="quick-actions">
-      <a class="button button-primary button-block" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
-      <a class="button button-block" href="{{ url_for('interview.config') }}">Start Real Interview</a>
-    </div>
-    {% endif %}
+          <h3 class="roadmap-day-topic rm-phase-title">{{ day.topic }}</h3>
+
+          <details class="rm-phase-details">
+            <summary class="rm-phase-summary">
+              <span>Focus of the day</span>
+              <span class="rm-chevron" aria-hidden="true"></span>
+            </summary>
+            <p class="ai-text roadmap-day-focus rm-phase-focus">{{ day.practice_focus }}</p>
+          </details>
+
+          <div class="rm-phase-actions">
+            <a class="button button-small button-primary rm-practice-btn"
+               href="{{ url_for('practice.pick', topic=day.topic, difficulty='medium') }}">Practice this topic</a>
+          </div>
+        </div>
+
+        <form method="post" action="{{ url_for('roadmap.toggle', day_id=day.id) }}"
+              class="roadmap-toggle-form">
+          {{ csrf_token() }}
+          <input type="hidden" name="state"
+                 value="{{ 'pending' if day.status == 'completed' else 'completed' }}">
+          <button type="submit" class="roadmap-toggle {{ 'is-checked' if day.status == 'completed' }}"
+                  aria-pressed="{{ 'true' if day.status == 'completed' else 'false' }}"
+                  aria-label="Mark day {{ day.day_number }} as
+                              {{ 'pending' if day.status == 'completed' else 'completed' }}">
+            <span class="checkmark" aria-hidden="true"></span>
+          </button>
+        </form>
+      </li>
+      {% endfor %}
+    </ol>
   </div>
-</section>
-{% endif %}
 
+  {% else %}
+
+  <!-- EMPTY / NO ROADMAP -->
+  <section class="rm-empty card rm-reveal">
+    <div class="empty-state rm-empty-state">
+      {% if has_weaknesses %}
+      <p class="rm-empty-eyebrow">Let's build it</p>
+      <p class="empty-state-title rm-empty-title">Your plan is one click away</p>
+      <p class="empty-state-text rm-empty-text">
+        The coach has spotted weak areas in your answers. Generate a
+        day-by-day roadmap that tackles them in order, starting with your
+        most repeated mistakes.
+      </p>
+      <form method="post" action="{{ url_for('roadmap.generate') }}" class="quick-actions rm-empty-actions">
+        {{ csrf_token() }}
+        {% include "_company_select.html" %}
+        <button type="submit" class="button button-primary button-block rm-empty-btn">Generate my learning roadmap</button>
+      </form>
+      {% else %}
+      <p class="rm-empty-eyebrow">Nothing to fix yet</p>
+      <p class="empty-state-title rm-empty-title">No weak spots to work on yet</p>
+      <p class="empty-state-text rm-empty-text">
+        Your roadmap is generated from the weaknesses the AI coach detects in
+        your answers. Finish some Smart Practice questions or a timed Real
+        Interview first — then come back for your personalized plan.
+      </p>
+      <div class="quick-actions rm-empty-actions">
+        <a class="button button-primary button-block rm-empty-btn" href="{{ url_for('practice.pick') }}">Start Smart Practice</a>
+        <a class="button button-block rm-empty-btn" href="{{ url_for('interview.config') }}">Start Real Interview</a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/roadmap.js') }}"></script>
 {% endblock %}
